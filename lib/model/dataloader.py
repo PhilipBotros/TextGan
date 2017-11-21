@@ -13,7 +13,7 @@ class Gen_Data_loader():
                 line = line.strip()
                 line = line.split()
                 parse_line = [int(x) for x in line]
-                if len(parse_line) == 20:
+                if len(parse_line) == 6:
                     self.token_stream.append(parse_line)
 
         self.num_batch = int(len(self.token_stream) / self.batch_size)
@@ -74,7 +74,6 @@ class Dis_dataloader():
 
         self.pointer = 0
 
-
     def next_batch(self):
         ret = self.sentences_batches[self.pointer], self.labels_batches[self.pointer]
         self.pointer = (self.pointer + 1) % self.num_batch
@@ -82,4 +81,3 @@ class Dis_dataloader():
 
     def reset_pointer(self):
         self.pointer = 0
-
