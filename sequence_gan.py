@@ -45,7 +45,6 @@ vocab_size = 5003
 vocab_file = abs_path + '/data/vocabulary.txt'
 idx_2_word = get_idx_2_word(vocab_file)
 
-
 def generate_samples(sess, trainable_model, batch_size, generated_num, output_file):
     # Generate Samples
     generated_samples = []
