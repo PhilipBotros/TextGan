@@ -74,7 +74,6 @@ class Dis_dataloader():
 
         self.pointer = 0
 
-
     def next_batch(self):
         ret = self.sentences_batches[self.pointer], self.labels_batches[self.pointer]
         self.pointer = (self.pointer + 1) % self.num_batch
@@ -82,4 +81,3 @@ class Dis_dataloader():
 
     def reset_pointer(self):
         self.pointer = 0
-
