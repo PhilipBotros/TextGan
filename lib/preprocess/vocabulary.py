@@ -1,4 +1,4 @@
-from tokenizer import tokenize, convert_sentence
+from helper import tokenize, convert_sentence
 from json_lines import reader
 from collections import Counter
 

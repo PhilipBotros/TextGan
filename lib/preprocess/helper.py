@@ -23,3 +23,12 @@ def convert_sentence(sentence, word_to_idx):
 								else str(unknown_token) for word in sentence)
 	
 	return sentence
+
+def get_idx_2_word(vocab_file):
+
+    idx_2_word = dict()
+    with open(vocab_file, 'r') as file:
+        for i, line in enumerate(file):
+            idx_2_word[str(i)] = line[:-1]
+
+    return idx_2_word
