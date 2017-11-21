@@ -8,6 +8,7 @@ from lib.model.rollout import ROLLOUT
 from lib.model.target_lstm import TARGET_LSTM
 from lib.preprocess.helper import get_idx_2_word
 import pickle
+import time
 
 #########################################################################################
 #  Generator  Hyper-parameters
@@ -39,12 +40,9 @@ negative_file = 'data/generator_sample.txt'
 eval_file = 'data/eval_file.txt'
 generated_num = 10000
 vocab_size = 5003
-<<<<<<< HEAD
 vocab_file = 'data/vocabulary.txt'
 idx_2_word = get_idx_2_word(vocab_file)
-=======
 
->>>>>>> 082ce49ea085dc297f6496d604dddd88c519de9b
 
 def generate_samples(sess, trainable_model, batch_size, generated_num, output_file):
     # Generate Samples
@@ -82,6 +80,7 @@ def pre_train_epoch(sess, trainable_model, data_loader):
     for it in range(data_loader.num_batch):
         batch = data_loader.next_batch()
         _, g_loss = trainable_model.pretrain_step(sess, batch)
+        end = time.time()
         supervised_g_losses.append(g_loss)
 
     return np.mean(supervised_g_losses)
@@ -119,7 +118,11 @@ def main():
     log.write('pre-training...\n')
     for epoch in range(PRE_EPOCH_NUM):
         print("epoch {}/{} of generator pre-training".format(epoch, PRE_EPOCH_NUM))
+        start = time.time()
         loss = pre_train_epoch(sess, generator, gen_data_loader)
+        end = time.time()
+        print("Time for epoch {}: {}s".format(epoch, end - start))
+        generate_samples(sess, generator, BATCH_SIZE, generated_num, negative_file)
         # if epoch % 5 == 0:
         #     generate_samples(sess, generator, BATCH_SIZE, generated_num, eval_file)
         #     likelihood_data_loader.create_batches(eval_file)
