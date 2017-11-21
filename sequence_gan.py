@@ -9,6 +9,7 @@ from lib.model.target_lstm import TARGET_LSTM
 from lib.preprocess.helper import get_idx_2_word
 import pickle
 import time
+import os
 
 #########################################################################################
 #  Generator  Hyper-parameters
@@ -35,12 +36,13 @@ dis_batch_size = 64
 #  Basic Training Parameters
 #########################################################################################
 TOTAL_BATCH = 200
-positive_file = 'data/training_data.txt'
-negative_file = 'data/generator_sample.txt'
-eval_file = 'data/eval_file.txt'
+abs_path = os.path.dirname(os.path.abspath(__file__))
+positive_file = abs_path + '/data/training_data.txt'
+negative_file = abs_path + '/data/generator_sample.txt'
+eval_file = abs_path + '/data/eval_file.txt'
 generated_num = 10000
 vocab_size = 5003
-vocab_file = 'data/vocabulary.txt'
+vocab_file = abs_path + '/data/vocabulary.txt'
 idx_2_word = get_idx_2_word(vocab_file)
 
 
@@ -112,7 +114,7 @@ def main():
     # generate_samples(sess, target_lstm, BATCH_SIZE, generated_num, positive_file)
     gen_data_loader.create_batches(positive_file)
 
-    log = open('data/experiment-log.txt', 'w')
+    log = open(abs_path + '/data/experiment-log.txt', 'w')
     #  pre-train generator
     print('Start pre-training...')
     log.write('pre-training...\n')
