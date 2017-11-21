@@ -26,8 +26,8 @@ BATCH_SIZE = 64
 #  Discriminator  Hyper-parameters
 #########################################################################################
 dis_embedding_dim = 64
-dis_filter_sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
-dis_num_filters = [100, 200, 200, 200, 200, 100, 100, 100, 100, 100, 160, 160]
+dis_filter_sizes = [1, 2, 3, 4, 5, 6]  # , 7, 8, 9, 10, 15, 20
+dis_num_filters = [100, 200, 200, 200, 200, 100]  # , 100, 100, 100, 100, 160, 160
 dis_dropout_keep_prob = 0.75
 dis_l2_reg_lambda = 0.2
 dis_batch_size = 64
@@ -44,6 +44,7 @@ generated_num = 10000
 vocab_size = 5003
 vocab_file = abs_path + '/data/vocabulary.txt'
 idx_2_word = get_idx_2_word(vocab_file)
+
 
 def generate_samples(sess, trainable_model, batch_size, generated_num, output_file):
     # Generate Samples
@@ -101,7 +102,7 @@ def main():
     # target_lstm = TARGET_LSTM(vocab_size, BATCH_SIZE, EMB_DIM, HIDDEN_DIM,
     #                           SEQ_LENGTH, START_TOKEN, target_params)  # The oracle model
 
-    discriminator = Discriminator(sequence_length=20, num_classes=2, vocab_size=vocab_size, embedding_size=dis_embedding_dim,
+    discriminator = Discriminator(sequence_length=6, num_classes=2, vocab_size=vocab_size, embedding_size=dis_embedding_dim,
                                   filter_sizes=dis_filter_sizes, num_filters=dis_num_filters, l2_reg_lambda=dis_l2_reg_lambda)
 
     config = tf.ConfigProto()
