@@ -39,12 +39,8 @@ negative_file = 'data/generator_sample.txt'
 eval_file = 'data/eval_file.txt'
 generated_num = 10000
 vocab_size = 5003
-<<<<<<< HEAD
 vocab_file = 'data/vocabulary.txt'
 idx_2_word = get_idx_2_word(vocab_file)
-=======
-
->>>>>>> 082ce49ea085dc297f6496d604dddd88c519de9b
 
 def generate_samples(sess, trainable_model, batch_size, generated_num, output_file):
     # Generate Samples
