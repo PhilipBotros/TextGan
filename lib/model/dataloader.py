@@ -45,7 +45,8 @@ class Dis_dataloader():
                 line = line.strip()
                 line = line.split()
                 parse_line = [int(x) for x in line]
-                positive_examples.append(parse_line)
+                if len(parse_line) == 6:
+                    positive_examples.append(parse_line)
         with open(negative_file)as fin:
             for line in fin:
                 line = line.strip()
