@@ -18,7 +18,8 @@ EMB_DIM = 32  # embedding dimension
 HIDDEN_DIM = 32  # hidden state dimension of lstm cell
 SEQ_LENGTH = 6  # sequence length
 START_TOKEN = 0
-PRE_EPOCH_NUM = 120  # supervise (maximum likelihood estimation) epochs
+PRE_EPOCH_NUM = 1  # supervise (maximum likelihood estimation) epochs
+PRE_TRAIN_DIS = 1  # Discriminator pre training epochs
 SEED = 88
 BATCH_SIZE = 64
 
@@ -35,13 +36,13 @@ dis_batch_size = 64
 #########################################################################################
 #  Basic Training Parameters
 #########################################################################################
-TOTAL_BATCH = 200
+TOTAL_BATCH = 2
 abs_path = os.path.dirname(os.path.abspath(__file__))
 positive_file = abs_path + '/data/training_data.txt'
 negative_file = abs_path + '/data/generator_sample.txt'
 eval_file = abs_path + '/data/eval_file.txt'
 generated_num = 10000
-vocab_size = 5003
+vocab_size = 8
 vocab_file = abs_path + '/data/vocabulary.txt'
 idx_2_word = get_idx_2_word(vocab_file)
 
@@ -135,7 +136,7 @@ def main():
 
     print('Start pre-training discriminator...')
     # Train 3 epoch on the generated data and do this for 50 times
-    for _ in range(50):
+    for _ in range(PRE_TRAIN_DIS):
         print("epoch {}/{} of discriminator")
         generate_samples(sess, generator, BATCH_SIZE, generated_num, negative_file)
         dis_data_loader.load_train_data(positive_file, negative_file)
