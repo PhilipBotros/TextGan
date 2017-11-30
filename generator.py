@@ -5,6 +5,7 @@ tfg = tf.contrib.rnn
 
 
 class Generator():
+    """A simple MLP generator"""
 
     def __init__(self, Z_dim, y_dim, h_dim, X_dim):
 
