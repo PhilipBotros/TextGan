@@ -23,6 +23,8 @@ class Vocabulary(object):
                 self.cntr.update(title)
                 self.sentences.append(title)
 
+        print("Obama: {}".format(self.cntr["obama"]))
+        print("Trump: {}".format(self.cntr["trump"]))
         most_common = self.cntr.most_common(nr_words)
         self.words = ['<SOS>', '<EOS>', '<UNK>'] + [
             word for word, _ in most_common

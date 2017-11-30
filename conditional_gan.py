@@ -5,13 +5,16 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
 
+# TODO:  add LSTM constants
+BATCH_SIZE = 64
+Z_DIM = 100
+X_DIM = mnist.train.images.shape[1]
+COND_DIM = mnist.train.labels.shape[1]
+HIDDEN_DIM = 128
 
+
+# TODO: read sentences, not images
 mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
-mb_size = 64
-Z_dim = 100
-X_dim = mnist.train.images.shape[1]
-y_dim = mnist.train.labels.shape[1]
-h_dim = 128
 
 
 def xavier_init(size):
@@ -87,10 +90,13 @@ G_sample = generator(Z, y)
 D_real, D_logit_real = discriminator(X, y)
 D_fake, D_logit_fake = discriminator(G_sample, y)
 
-D_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_real, labels=tf.ones_like(D_logit_real)))
-D_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake, labels=tf.zeros_like(D_logit_fake)))
+D_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+    logits=D_logit_real, labels=tf.ones_like(D_logit_real)))
+D_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+    logits=D_logit_fake, labels=tf.zeros_like(D_logit_fake)))
 D_loss = D_loss_real + D_loss_fake
-G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake, labels=tf.ones_like(D_logit_fake)))
+G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+    logits=D_logit_fake, labels=tf.ones_like(D_logit_fake)))
 
 D_solver = tf.train.AdamOptimizer().minimize(D_loss, var_list=theta_D)
 G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
@@ -112,7 +118,7 @@ for it in range(1000000):
         y_sample = np.zeros(shape=[n_sample, y_dim])
         y_sample[:, 7] = 1
 
-        samples = sess.run(G_sample, feed_dict={Z: Z_sample, y:y_sample})
+        samples = sess.run(G_sample, feed_dict={Z: Z_sample, y: y_sample})
 
         fig = plot(samples)
         plt.savefig('out/{}.png'.format(str(i).zfill(3)), bbox_inches='tight')
@@ -122,8 +128,8 @@ for it in range(1000000):
     X_mb, y_mb = mnist.train.next_batch(mb_size)
 
     Z_sample = sample_Z(mb_size, Z_dim)
-    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: Z_sample, y:y_mb})
-    _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: Z_sample, y:y_mb})
+    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: Z_sample, y: y_mb})
+    _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: Z_sample, y: y_mb})
 
     if it % 1000 == 0:
         print('Iter: {}'.format(it))
