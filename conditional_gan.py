@@ -4,7 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+from discriminator import Discriminator
+from generator import Generator
 
+mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
 # TODO:  add LSTM constants
 BATCH_SIZE = 64
 Z_DIM = 100
@@ -14,56 +17,56 @@ HIDDEN_DIM = 128
 
 
 # TODO: read sentences, not images
-mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
 
 
-def xavier_init(size):
-    in_dim = size[0]
-    xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
-    return tf.random_normal(shape=size, stddev=xavier_stddev)
+
+# def xavier_init(size):
+#     in_dim = size[0]
+#     xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
+#     return tf.random_normal(shape=size, stddev=xavier_stddev)
 
 
-""" Discriminator Net model """
-X = tf.placeholder(tf.float32, shape=[None, 784])
-y = tf.placeholder(tf.float32, shape=[None, y_dim])
+# """ Discriminator Net model """
+# X = tf.placeholder(tf.float32, shape=[None, 784])
+# y = tf.placeholder(tf.float32, shape=[None, y_dim])
 
-D_W1 = tf.Variable(xavier_init([X_dim + y_dim, h_dim]))
-D_b1 = tf.Variable(tf.zeros(shape=[h_dim]))
+# D_W1 = tf.Variable(xavier_init([X_dim + y_dim, h_dim]))
+# D_b1 = tf.Variable(tf.zeros(shape=[h_dim]))
 
-D_W2 = tf.Variable(xavier_init([h_dim, 1]))
-D_b2 = tf.Variable(tf.zeros(shape=[1]))
+# D_W2 = tf.Variable(xavier_init([h_dim, 1]))
+# D_b2 = tf.Variable(tf.zeros(shape=[1]))
 
-theta_D = [D_W1, D_W2, D_b1, D_b2]
-
-
-def discriminator(x, y):
-    inputs = tf.concat(axis=1, values=[x, y])
-    D_h1 = tf.nn.relu(tf.matmul(inputs, D_W1) + D_b1)
-    D_logit = tf.matmul(D_h1, D_W2) + D_b2
-    D_prob = tf.nn.sigmoid(D_logit)
-
-    return D_prob, D_logit
+# theta_D = [D_W1, D_W2, D_b1, D_b2]
 
 
-""" Generator Net model """
-Z = tf.placeholder(tf.float32, shape=[None, Z_dim])
+# def discriminator(x, y):
+#     inputs = tf.concat(axis=1, values=[x, y])
+#     D_h1 = tf.nn.relu(tf.matmul(inputs, D_W1) + D_b1)
+#     D_logit = tf.matmul(D_h1, D_W2) + D_b2
+#     D_prob = tf.nn.sigmoid(D_logit)
 
-G_W1 = tf.Variable(xavier_init([Z_dim + y_dim, h_dim]))
-G_b1 = tf.Variable(tf.zeros(shape=[h_dim]))
-
-G_W2 = tf.Variable(xavier_init([h_dim, X_dim]))
-G_b2 = tf.Variable(tf.zeros(shape=[X_dim]))
-
-theta_G = [G_W1, G_W2, G_b1, G_b2]
+#     return D_prob, D_logit
 
 
-def generator(z, y):
-    inputs = tf.concat(axis=1, values=[z, y])
-    G_h1 = tf.nn.relu(tf.matmul(inputs, G_W1) + G_b1)
-    G_log_prob = tf.matmul(G_h1, G_W2) + G_b2
-    G_prob = tf.nn.sigmoid(G_log_prob)
+# """ Generator Net model """
+# Z = tf.placeholder(tf.float32, shape=[None, Z_dim])
 
-    return G_prob
+# G_W1 = tf.Variable(xavier_init([Z_dim + y_dim, h_dim]))
+# G_b1 = tf.Variable(tf.zeros(shape=[h_dim]))
+
+# G_W2 = tf.Variable(xavier_init([h_dim, X_dim]))
+# G_b2 = tf.Variable(tf.zeros(shape=[X_dim]))
+
+# theta_G = [G_W1, G_W2, G_b1, G_b2]
+
+
+# def generator(z, y):
+#     inputs = tf.concat(axis=1, values=[z, y])
+#     G_h1 = tf.nn.relu(tf.matmul(inputs, G_W1) + G_b1)
+#     G_log_prob = tf.matmul(G_h1, G_W2) + G_b2
+#     G_prob = tf.nn.sigmoid(G_log_prob)
+
+#     return G_prob
 
 
 def sample_Z(m, n):
@@ -85,6 +88,8 @@ def plot(samples):
 
     return fig
 
+generator = Generator(Z_DIM, COND_DIM, HIDDEN_DIM, X_DIM)
+discriminator = Discriminator(COND_DIM, X_DIM, HIDDEN_DIM)
 
 G_sample = generator(Z, y)
 D_real, D_logit_real = discriminator(X, y)
@@ -128,8 +133,8 @@ for it in range(1000000):
     X_mb, y_mb = mnist.train.next_batch(mb_size)
 
     Z_sample = sample_Z(mb_size, Z_dim)
-    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: Z_sample, y: y_mb})
-    _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: Z_sample, y: y_mb})
+    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={discriminator.X: X_mb, discriminator.Z: Z_sample, discriminator.y: y_mb})
+    _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={generator.Z: Z_sample, generator.y: y_mb})
 
     if it % 1000 == 0:
         print('Iter: {}'.format(it))
