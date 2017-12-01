@@ -51,8 +51,9 @@ with tf.Session() as sess:
     #-- Test LSTM generator ------------------------------------------------------------------------
     Z_sample = sample_Z(N_SAMPLE, Z_DIM)
     y_sample = np.zeros(shape=[N_SAMPLE, COND_DIM])
+    start_token = -np.ones(shape=[N_SAMPLE]).astype(int)
     samples = sess.run(lstm_generator.samples, feed_dict={
-                       lstm_generator.y: y_sample, lstm_generator.Z: Z_sample})
+                       lstm_generator.y: y_sample, lstm_generator.Z: Z_sample, "start_token:0": start_token})
     print("LSTM generator random samples")
     print(samples)
     #-----------------------------------------------------------------------------------------------
@@ -68,7 +69,7 @@ with tf.Session() as sess:
         if it % 1000 == 0:
             # Sample generator inputs; conditional label is the seventh digit
             Z_sample = sample_Z(N_SAMPLE, Z_DIM)
-            y_sample = np.zeros(shape=[N_SAMPLE, COND_DIM])
+            y_sample = np.zeros(shape=[N_SAMPLE, COND_DIM]).astype(float)
             y_sample[:, 7] = 1
 
             samples = sess.run(generator.G_prob, feed_dict={

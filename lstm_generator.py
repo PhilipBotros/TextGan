@@ -17,6 +17,10 @@ class LSTM_Generator():
         self.y = tf.placeholder(tf.float32, shape=[None, y_dim])
         self.temperature = tf.placeholder_with_default(1.0, shape=[])
 
+        # Initial state will be "sample" Z and "condition" y, concatenated
+        self.initial_state = tf.concat(axis=1, values=[self.Z, self.y])
+        h_dim = Z_dim + y_dim
+
         # Initializers
         self.weight_initializer = tf.contrib.layers.xavier_initializer()
         self.const_initializer = tf.constant_initializer()
@@ -29,27 +33,25 @@ class LSTM_Generator():
 
         # Build computational graph
         # TODO: cast all inputs to self, or keep this way??
-        self._lstm_generator(Z_dim, y_dim, X_dim, batch_size)
+        self._lstm_generator(Z_dim, y_dim, X_dim, h_dim, batch_size)
 
-    def _lstm_generator(self, Z_dim, y_dim, X_dim, batch_size):
+    def _lstm_generator(self, Z_dim, y_dim, X_dim, h_dim, batch_size):
         """Generate text with a while loop over a LSTM cell"""
-        # Start token, -1 for now
-        # Will be a matrix of zeros
-        # TODO: make shape flexible
-        start_token = tf.one_hot(-tf.ones(shape=[1, batch_size]), self.vocab_size)
+        # Start token
+        start_token = tf.one_hot(
+            tf.placeholder(tf.int32, shape=[None], name="start_token"), self.vocab_size, dtype=tf.float32)
 
-        # Initial state will be "sample" Z and "condition" y, concatenated
-        initial_state = tf.concat(axis=1, values=[self.Z, self.y])
-        state_tuple = tfr.LSTMStateTuple(initial_state, initial_state)
+        # We pass the same initial state to h and c for now
+        state_tuple = tfr.LSTMStateTuple(self.initial_state, self.initial_state)
 
         # Just a simple LSTM for starters
-        self.lstm = tfr.BasicLSTMCell(initial_state.get_shape()[1])
+        self.lstm = tfr.BasicLSTMCell(h_dim)
 
         # Dynamic array to store output at every timestep
         self.samples = tf.TensorArray(
             tf.int32, 1, dynamic_size=True, infer_shape=False, clear_after_read=False)
 
-        i = tf.constant(0, dtype=int32)
+        i = tf.constant(0, dtype=tf.int32)
 
         # Loop that supplies LSTM output prediction as next input, and stores in Tensor array
         _, _, _, self.samples = tf.while_loop(self._rollout_cond, self._lstm_rollout,
