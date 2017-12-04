@@ -1,98 +1,83 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
-import matplotlib.pyplot as plt
-# import matplotlib.gridspec as gridspec
 import os
+import utils
 from discriminator import Discriminator
 from generator import Generator
 from lstm_generator import LSTM_Generator
+from lstm_discriminator import LSTM_Discriminator
 from auxiliary import sample_Z, plot
 
 
-# TODO: read sentences, not images
-mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
-
 # TODO:  add LSTM constants
 # TODO: command line args perhaps?
-BATCH_SIZE = 64
-Z_DIM = 100
-X_DIM = mnist.train.images.shape[1]
-COND_DIM = mnist.train.labels.shape[1]
-HIDDEN_DIM = 128
+BATCH_SIZE = 10
+SEQ_LEN = 20
+Z_DIM = 10
+X_DIM = SEQ_LEN
+Y_DIM = 10
+HIDDEN_DIM = 10
 N_SAMPLE = 16
+VOCAB_SIZE = 10
 
 #-- Build Graph ------------------------------------------------------------------------------------
 # Intialize generator and discriminator
 # TODO: take placeholders outside of classes, it stopped making any sense
-generator = Generator(Z_DIM, COND_DIM, HIDDEN_DIM, X_DIM)
-discriminator = Discriminator(COND_DIM, X_DIM, HIDDEN_DIM)
-lstm_generator = LSTM_Generator(Z_DIM, COND_DIM, X_DIM, 100, 30, BATCH_SIZE)
+# TODO: fix generator loss
 
-# Add discriminator outputs
-D_real, D_logit_real = discriminator.run(generator.y, discriminator.X)
-D_fake, D_logit_fake = discriminator.run(generator.y, generator.G_prob)
+discriminator = LSTM_Discriminator(Z_DIM, Y_DIM, X_DIM, VOCAB_SIZE, SEQ_LEN, BATCH_SIZE)
+generator = LSTM_Generator(Z_DIM, Y_DIM, X_DIM, VOCAB_SIZE, SEQ_LEN, BATCH_SIZE)
+
+samples = generator.samples
+states = generator.states
+
+D_logit_real = discriminator.logits
+discriminator.X = samples
+D_logit_fake = discriminator.logits
 
 # Add discriminator and generator loss
-D_loss = discriminator.loss(D_real, 1) + discriminator.loss(D_fake, 0)
-G_loss = discriminator.loss(D_fake, 1)
+D_loss = discriminator.loss(D_logit_real, 1) + discriminator.loss(D_logit_fake, 0)
+# MODIFY LOSS
+G_loss = generator.loss(samples, states, discriminator)
 
 # Add optimizers
 D_solver = tf.train.AdamOptimizer().minimize(D_loss, var_list=discriminator.theta_D)
 G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=generator.theta_G)
-
-#-- Test LSTM generator ----------------------------------------------------------------------------
 
 #-- Train ------------------------------------------------------------------------------------------
 with tf.Session() as sess:
     # Initialize all variables
     sess.run(tf.global_variables_initializer())
 
-    #-- Test LSTM generator ------------------------------------------------------------------------
-    Z_sample = sample_Z(N_SAMPLE, Z_DIM)
-    y_sample = np.zeros(shape=[N_SAMPLE, COND_DIM])
-    start_token = -np.ones(shape=[N_SAMPLE]).astype(int)
-    samples = sess.run(lstm_generator.samples, feed_dict={
-                       lstm_generator.y: y_sample, lstm_generator.Z: Z_sample, "start_token:0": start_token})
-    print("LSTM generator random samples")
-    print(samples)
-    #-----------------------------------------------------------------------------------------------
-
-    # Store MNIST
-    if not os.path.exists('out/'):
-        os.makedirs('out/')
-
-    i = 0
+    start = -np.ones(shape=[N_SAMPLE]).astype(int)
 
     # Joint discriminator/generator training
     for it in range(1000000):
-        if it % 1000 == 0:
+        if it % 1 == 0:
             # Sample generator inputs; conditional label is the seventh digit
             Z_sample = sample_Z(N_SAMPLE, Z_DIM)
-            y_sample = np.zeros(shape=[N_SAMPLE, COND_DIM]).astype(float)
+            y_sample = np.zeros(shape=[N_SAMPLE, Y_DIM]).astype(float)
             y_sample[:, 7] = 1
 
-            samples = sess.run(generator.G_prob, feed_dict={
-                               generator.Z: Z_sample, generator.y: y_sample})
+            tr_samples = sess.run(generator.samples, feed_dict={
+                               generator.Z: Z_sample, generator.y: y_sample, "start_token:0": start})
 
-            fig = plot(samples)
-            plt.savefig('out/{}.png'.format(str(i).zfill(3)), bbox_inches='tight')
-            i += 1
-            plt.close(fig)
+            print(tr_samples)
 
-        X_mb, y_mb = mnist.train.next_batch(BATCH_SIZE)
 
+        X_mb = utils.generate_palindrome_batch(BATCH_SIZE, SEQ_LEN)
+        y_mb = X_mb[:, -1]
         # Joint Optimization
         Z_sample = sample_Z(BATCH_SIZE, Z_DIM)
         _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={
-                                  discriminator.X: X_mb, generator.Z: Z_sample, generator.y: y_mb})
+                                  'Discriminator/Inputs:0': X_mb, Z: Z_sample, discriminator.y: y_mb})
         _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={
-                                  generator.Z: Z_sample, generator.y: y_mb})
+                                  'Discriminator/Inputs:0': X_mb, Z: Z_sample, y: y_mb})
 
-        if it % 1000 == 0:
+        if it % 10 == 0:
             print('Iter: {}'.format(it))
             print('D loss: {:.4}'. format(D_loss_curr))
             print('G_loss: {:.4}'.format(G_loss_curr))
-            print()
 
 #-- The End ----------------------------------------------------------------------------------------

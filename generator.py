@@ -1,17 +1,11 @@
 # Tensorflow modules
 import tensorflow as tf
-tfr = tf.contrib.rnn
-tfg = tf.contrib.rnn
 
 
 class Generator():
     """A simple MLP generator"""
 
     def __init__(self, Z_dim, y_dim, h_dim, X_dim):
-
-        # Inputs
-        self.Z = tf.placeholder(tf.float32, shape=[None, Z_dim])
-        self.y = tf.placeholder(tf.float32, shape=[None, y_dim])
 
         # Initializers
         self.weight_initializer = tf.contrib.layers.xavier_initializer()
@@ -31,9 +25,12 @@ class Generator():
         # Build computational graph
         self._build_generator()
 
-    def _build_generator(self):
+    def generate(self, y, z):
         """Generator feedforward graph"""
         inputs = tf.concat(axis=1, values=[self.Z, self.y])
         G_h1 = tf.nn.relu(tf.matmul(inputs, self.G_W1) + self.G_b1)
         G_log_prob = tf.matmul(G_h1, self.G_W2) + self.G_b2
         self.G_prob = tf.nn.sigmoid(G_log_prob)
+
+        
+
