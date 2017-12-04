@@ -3,6 +3,7 @@ import tensorflow as tf
 tfr = tf.contrib.rnn
 tfg = tf.contrib.rnn
 
+
 class LSTM_Generator():
     """LSTM generator that has text io"""
 
@@ -24,7 +25,7 @@ class LSTM_Generator():
         self.h_dim = Z_dim + y_dim
 
         self.start_token = tf.one_hot(
-        tf.placeholder(tf.int32, shape=[None], name="start_token"), self.vocab_size, dtype=tf.float32)
+            tf.placeholder(tf.int32, shape=[None], name="start_token"), self.vocab_size, dtype=tf.float32)
 
         # Initializers
         self.weight_initializer = tf.contrib.layers.xavier_initializer()
@@ -40,28 +41,35 @@ class LSTM_Generator():
         # TODO: cast all inputs to self, or keep this way??
         self.LSTM = tfr.BasicLSTMCell(self.h_dim)
 
-
-        self.init_state = tfr.LSTMStateTuple(self.initial_state, self.initial_state)
-        _, _, lstm_vars = self._lstm_generator(self.start_token, self.init_state, self.i)
+        # self.init_state = tfr.LSTMStateTuple(self.initial_state, self.initial_state)
+        _, _, _, lstm_vars = self._lstm_generator(
+            self.start_token, self.initial_state, self.initial_state, self.i)
 
         self.theta_G = [self.W_out, self.b_out, lstm_vars]
 
-    def _lstm_generator(self, start_token, state, i):
+    def _lstm_generator(self, start_token, c, h, i):
         """Generate text with a while loop over a LSTM cell"""
 
         # Dynamic array to store output at every timestep
         self.samples = tf.TensorArray(
             tf.int32, 1, dynamic_size=True, infer_shape=False, clear_after_read=False)
 
-        self.states = tf.TensorArray(
+        self.h = tf.TensorArray(
             tf.float32, self.h_dim, dynamic_size=True, infer_shape=False, clear_after_read=False)
+
+        self.c = tf.TensorArray(
+            tf.float32, self.h_dim, dynamic_size=True, infer_shape=False, clear_after_read=False)
+
+        self.h = self.h.write(i, h)
+        self.c = self.c.write(i, c)
+        init_state = tfr.LSTMStateTuple(c, h)
 
         i = tf.constant(i, dtype=tf.int32)
 
         with tf.variable_scope("Generator") as scope:
             # Loop that supplies LSTM output prediction as next input, and stores in Tensor array
-            _, self.states, _, self.samples = tf.while_loop(self._rollout_cond, self._lstm_rollout,
-                                                  (i, self.init_state, start_token, self.samples))
+            _, _, self.c, self.h, _, self.samples = tf.while_loop(self._rollout_cond, self._lstm_rollout,
+                                                                  (i, init_state, self.c, self.h, start_token, self.samples))
 
             # Stack tensor array with samples to get a regular tensor as output
             # This tensor will contain integer index outputs (so not one-hot)
@@ -72,20 +80,28 @@ class LSTM_Generator():
 
             trainable_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope.name)
 
-        return self.samples, self.states, trainable_vars
+        return self.samples, self.c, self.h, trainable_vars
 
     #-- Helpers ------------------------------------------------------------------------------------
 
-    def _lstm_rollout(self, i, state_tuple, X, predictions):
+    def _lstm_rollout(self, i, state_tuple, c, h, X, predictions):
         """Compute a single timestep trough an LSTM cell; returns the input for the next timestep."""
         # with tf.variable_scope("LSTM", reuse=True) as scope:
+        # Gather new hidden states
         output, new_state = self.LSTM(X, state_tuple)
+        print(new_state[0].get_shape())
+        c = c.write(i + 1, new_state[0])
+        print(c.read(i + 1))
+        h = h.write(i + 1, new_state[1])
+
+        # Gather new input X
         logits = tf.add(tf.matmul(output, self.W_out), self.b_out, name="logits")
         next_X, predictions = self._prediction(logits, i, predictions)
         i = tf.add(i, 1)
-        return i, new_state, next_X, predictions
 
-    def _rollout_cond(self, i, state_tuple, X, predictions):
+        return i, new_state, c, h, next_X, predictions
+
+    def _rollout_cond(self, i, state_tuple, c, h, X, predictions):
         "While loop stopping condition"
         return tf.less(i, self.seq_len)
 
@@ -101,7 +117,7 @@ class LSTM_Generator():
         predictions = predictions.write(idx, prediction)
         return tf.one_hot(prediction, self.vocab_size), predictions
 
-    def loss(self, samples, states, discriminator, nr_rollouts = 5):
+    def loss(self, samples, c, h, discriminator, nr_rollouts=5):
         """Generator loss. Based on the expected reward given by MC rollout"""
         # Rollout for every t < T
         # Put through discriminator to get score
@@ -110,12 +126,13 @@ class LSTM_Generator():
         for t in range(self.seq_len - 1):
             for _ in range(nr_rollouts):
                 # rollout, _, _ = self._lstm_generator(tf.cast(samples[t], tf.float32), states[t], t)
-                rollout, _, _ = self._lstm_generator(tf.cast(samples[t], tf.float32), self.init_state, t)
+                rollout, _, _, _ = self._lstm_generator(
+                    tf.one_hot(samples[t], self.vocab_size, dtype=tf.float32), c.read(t), h.read(t), t)
                 rollout_seq = tf.concat(samples[:t] + rollout, axis=1)
                 loss += tf.reduce_sum(discriminator.inference(rollout_seq, self.y))
-        
+
         # Get average loss over N rollouts
-        loss /= nr_rollouts                
+        loss /= nr_rollouts
         # Add loss of complete sequence (t = T)
         loss += tf.reduce_sum(discriminator.inference(samples, self.y))
 
