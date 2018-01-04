@@ -55,11 +55,10 @@ class GenDataIter(object):
 
 class DisDataIter(object):
     """ Toy data iter to load digits"""
-    def __init__(self, real_data_file, fake_data_file, batch_size):
+    def __init__(self, real_data_file, fake_data_lis, batch_size):
         super(DisDataIter, self).__init__()
         self.batch_size = batch_size
         real_data_lis = self.read_file(real_data_file)
-        fake_data_lis = self.read_file(fake_data_file)
         self.data = real_data_lis + fake_data_lis
         self.labels = [1 for _ in range(len(real_data_lis))] +\
                         [0 for _ in range(len(fake_data_lis))]

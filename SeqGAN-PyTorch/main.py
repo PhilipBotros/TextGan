@@ -1,12 +1,8 @@
-# -*- coding:utf-8 -*-
 
 import os
 import random
 import math
-
 import argparse
-import tqdm
-
 import numpy as np
 
 import torch
@@ -29,19 +25,19 @@ print(opt)
 # Basic Training Paramters
 SEED = 88
 BATCH_SIZE = 64
-TOTAL_BATCH = 200
+TOTAL_BATCH = 10
 GENERATED_NUM = 10000
 POSITIVE_FILE = 'real.data'
 NEGATIVE_FILE = 'gene.data'
 EVAL_FILE = 'eval.data'
 VOCAB_SIZE = 5000
-PRE_EPOCH_NUM = 120
+PRE_EPOCH_NUM = 1
 
 if opt.cuda is not None and opt.cuda >= 0:
     torch.cuda.set_device(opt.cuda)
     opt.cuda = True
 
-# Genrator Parameters
+# Generator Parameters
 g_emb_dim = 32
 g_hidden_dim = 32
 g_sequence_len = 20
@@ -61,16 +57,13 @@ def generate_samples(model, batch_size, generated_num, output_file):
     for _ in range(int(generated_num / batch_size)):
         sample = model.sample(batch_size, g_sequence_len).cpu().data.numpy().tolist()
         samples.extend(sample)
-    with open(output_file, 'w') as fout:
-        for sample in samples:
-            string = ' '.join([str(s) for s in sample])
-            fout.write('%s\n' % string)
+
+    return samples
 
 def train_epoch(model, data_iter, criterion, optimizer):
     total_loss = 0.
     total_words = 0.
-    for (data, target) in data_iter:#tqdm(
-        #data_iter, mininterval=2, desc=' - Training', leave=False):
+    for (data, target) in data_iter:
         data = Variable(data)
         target = Variable(target)
         if opt.cuda:
@@ -89,8 +82,7 @@ def train_epoch(model, data_iter, criterion, optimizer):
 def eval_epoch(model, data_iter, criterion):
     total_loss = 0.
     total_words = 0.
-    for (data, target) in data_iter:#tqdm(
-        #data_iter, mininterval=2, desc=' - Training', leave=False):
+    for (data, target) in data_iter:
         data = Variable(data, volatile=True)
         target = Variable(target, volatile=True)
         if opt.cuda:
@@ -138,48 +130,48 @@ def main():
     # Define Networks
     generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
     discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim, d_filter_sizes, d_num_filters, d_dropout)
-    target_lstm = TargetLSTM(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
+
     if opt.cuda:
         generator = generator.cuda()
         discriminator = discriminator.cuda()
-        target_lstm = target_lstm.cuda()
-    # Generate toy data using target lstm
-    print('Generating data ...')
-    generate_samples(target_lstm, BATCH_SIZE, GENERATED_NUM, POSITIVE_FILE)
+
+    # print('Generating data ...')
+    # generate_samples(target_lstm, BATCH_SIZE, GENERATED_NUM, POSITIVE_FILE)
     
-    # Load data from file
-    gen_data_iter = GenDataIter(POSITIVE_FILE, BATCH_SIZE)
+    # # Load data from file
+    # gen_data_iter = GenDataIter(POSITIVE_FILE, BATCH_SIZE)
 
-    # Pretrain Generator using MLE
-    gen_criterion = nn.NLLLoss(size_average=False)
-    gen_optimizer = optim.Adam(generator.parameters())
-    if opt.cuda:
-        gen_criterion = gen_criterion.cuda()
-    print('Pretrain with MLE ...')
-    for epoch in range(PRE_EPOCH_NUM):
-        loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer)
-        print('Epoch [%d] Model Loss: %f'% (epoch, loss))
-        generate_samples(generator, BATCH_SIZE, GENERATED_NUM, EVAL_FILE)
-        eval_iter = GenDataIter(EVAL_FILE, BATCH_SIZE)
-        loss = eval_epoch(target_lstm, eval_iter, gen_criterion)
-        print('Epoch [%d] True Loss: %f' % (epoch, loss))
+    # # Pretrain Generator using MLE
+    # gen_criterion = nn.NLLLoss(size_average=False)
+    # gen_optimizer = optim.Adam(generator.parameters())
+    # if opt.cuda:
+    #     gen_criterion = gen_criterion.cuda()
+    # print('Pretrain with MLE ...')
+    # for epoch in range(PRE_EPOCH_NUM):
+    #     loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer)
+    #     print('Epoch [%d] Model Loss: %f'% (epoch, loss))
+    #     generate_samples(generator, BATCH_SIZE, GENERATED_NUM, EVAL_FILE)
+    #     eval_iter = GenDataIter(EVAL_FILE, BATCH_SIZE)
+    #     loss = eval_epoch(target_lstm, eval_iter, gen_criterion)
+    #     print('Epoch [%d] True Loss: %f' % (epoch, loss))
 
-    # Pretrain Discriminator
-    dis_criterion = nn.NLLLoss(size_average=False)
-    dis_optimizer = optim.Adam(discriminator.parameters())
-    if opt.cuda:
-        dis_criterion = dis_criterion.cuda()
-    print('Pretrain Dsicriminator ...')
-    for epoch in range(5):
-        generate_samples(generator, BATCH_SIZE, GENERATED_NUM, NEGATIVE_FILE)
-        dis_data_iter = DisDataIter(POSITIVE_FILE, NEGATIVE_FILE, BATCH_SIZE)
-        for _ in range(3):
-            loss = train_epoch(discriminator, dis_data_iter, dis_criterion, dis_optimizer)
-            print('Epoch [%d], loss: %f' % (epoch, loss))
+    # # Pretrain Discriminator
+    # dis_criterion = nn.NLLLoss(size_average=False)
+    # dis_optimizer = optim.Adam(discriminator.parameters())
+    # if opt.cuda:
+    #     dis_criterion = dis_criterion.cuda()
+    # print('Pretrain Discriminator ...')
+    # for epoch in range(1):
+    #     generate_samples(generator, BATCH_SIZE, GENERATED_NUM, NEGATIVE_FILE)
+    #     dis_data_iter = DisDataIter(POSITIVE_FILE, NEGATIVE_FILE, BATCH_SIZE)
+    #     for _ in range(1):
+    #         loss = train_epoch(discriminator, dis_data_iter, dis_criterion, dis_optimizer)
+    #         print('Epoch [%d], loss: %f' % (epoch, loss))
+
     # Adversarial Training 
     rollout = Rollout(generator, 0.8)
     print('#####################################################')
-    print('Start Adeversatial Training...\n')
+    print('Start Adverserial Training...\n')
     gen_gan_loss = GANLoss()
     gen_gan_optm = optim.Adam(generator.parameters())
     if opt.cuda:
@@ -195,7 +187,7 @@ def main():
         ## Train the generator for one step
         for it in range(1):
             samples = generator.sample(BATCH_SIZE, g_sequence_len)
-            # construct the input to the genrator, add zeros before samples and delete the last column
+            # construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((BATCH_SIZE, 1)).type(torch.LongTensor)
             if samples.is_cuda:
                 zeros = zeros.cuda()
@@ -212,17 +204,18 @@ def main():
             loss.backward()
             gen_gan_optm.step()
 
-        if total_batch % 1 == 0 or total_batch == TOTAL_BATCH - 1:
-            generate_samples(generator, BATCH_SIZE, GENERATED_NUM, EVAL_FILE)
-            eval_iter = GenDataIter(EVAL_FILE, BATCH_SIZE)
-            loss = eval_epoch(target_lstm, eval_iter, gen_criterion)
-            print('Batch [%d] True Loss: %f' % (total_batch, loss))
+        # if total_batch % 1 == 0 or total_batch == TOTAL_BATCH - 1:
+        #     generate_samples(generator, BATCH_SIZE, GENERATED_NUM, EVAL_FILE)
+        #     eval_iter = GenDataIter(EVAL_FILE, BATCH_SIZE)
+        #     loss = eval_epoch(target_lstm, eval_iter, gen_criterion)
+        #     print('Batch [%d] True Loss: %f' % (total_batch, loss))
         rollout.update_params()
         
-        for _ in range(4):
-            generate_samples(generator, BATCH_SIZE, GENERATED_NUM, NEGATIVE_FILE)
-            dis_data_iter = DisDataIter(POSITIVE_FILE, NEGATIVE_FILE, BATCH_SIZE)
-            for _ in range(2):
+        for _ in range(1):
+            samples = generate_samples(generator, BATCH_SIZE, GENERATED_NUM, NEGATIVE_FILE)
+            dis_data_iter = DisDataIter(POSITIVE_FILE, samples, BATCH_SIZE)
+            for _ in range(1):
                 loss = train_epoch(discriminator, dis_data_iter, dis_criterion, dis_optimizer)
+                print('Batch [%d] Loss: %f' % (total_batch, loss))
 if __name__ == '__main__':
     main()
