@@ -26,9 +26,8 @@ print(opt)
 # Basic Training Paramters
 SEED = 88
 BATCH_SIZE = 64
-TOTAL_BATCH = 10
+TOTAL_BATCH = 100
 GENERATED_NUM = 10000
-POSITIVE_FILE = 'real.data'
 VOCAB_SIZE = 10
 PRE_EPOCH_NUM = 1
 
@@ -39,11 +38,12 @@ if opt.cuda is not None and opt.cuda >= 0:
 # Generator Parameters
 g_emb_dim = 32
 g_hidden_dim = 32
-g_sequence_len = 20
+g_sequence_len = 6
 
 # Discriminator Parameters
 d_emb_dim = 64
-d_filter_sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+# d_filter_sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+d_filter_sizes = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 d_num_filters = [100, 200, 200, 200, 200, 100, 100, 100, 100, 100, 160, 160]
 
 d_dropout = 0.75
@@ -88,6 +88,7 @@ def train_epoch(model, data_iter, criterion, optimizer):
         optimizer.step()
     data_iter.reset()
     
+
     return math.exp(total_loss / total_words)
 
 def eval_epoch(model, data_iter, criterion):
@@ -144,8 +145,6 @@ def main():
     generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
     discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim, d_filter_sizes, d_num_filters, d_dropout)
 
-    real_data = read_file(POSITIVE_FILE)
-
     real_data = utils.generate_palindrome_batch(9984, g_sequence_len)
 
     if opt.cuda:
@@ -178,7 +177,7 @@ def main():
             inputs = Variable(torch.cat([zeros, samples.data], dim = 1)[:, :-1].contiguous())
             targets = Variable(samples.data).contiguous().view((-1,))
             # calculate the reward
-            rewards = rollout.get_reward(samples, 16, discriminator)
+            rewards = rollout.get_reward(samples, 5, discriminator)
             rewards = Variable(torch.Tensor(rewards))
             if opt.cuda:
                 rewards = torch.exp(rewards.cuda()).contiguous().view((-1,))
@@ -193,6 +192,7 @@ def main():
         
         for _ in range(1):
             samples = generate_samples(generator, BATCH_SIZE, GENERATED_NUM)
+            print samples[:10]
             dis_data_iter = DisDataIter(real_data, samples, BATCH_SIZE)
             for _ in range(1):
                 loss = train_epoch(discriminator, dis_data_iter, dis_criterion, dis_optimizer)
