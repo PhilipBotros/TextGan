@@ -55,15 +55,14 @@ class GenDataIter(object):
 
 class DisDataIter(object):
     """ Toy data iter to load digits"""
-    def __init__(self, real_data_file, fake_data_lis, batch_size):
+    def __init__(self, real_data_lis, fake_data_lis, batch_size):
         super(DisDataIter, self).__init__()
         self.batch_size = batch_size
-        real_data_lis = self.read_file(real_data_file)
         self.data = real_data_lis + fake_data_lis
         self.labels = [1 for _ in range(len(real_data_lis))] +\
                         [0 for _ in range(len(fake_data_lis))]
         self.pairs = zip(self.data, self.labels)
-        self.data_num = len(self.pairs)
+        self.data_num = len(self.data)
         self.indices = range(self.data_num)
         self.num_batches = int(math.ceil(float(self.data_num)/self.batch_size))
         self.idx = 0
@@ -92,15 +91,5 @@ class DisDataIter(object):
         label = torch.LongTensor(np.asarray(label, dtype='int64'))
         self.idx += self.batch_size
         return data, label
-
-    def read_file(self, data_file):
-        with open(data_file, 'r') as f:
-            lines = f.readlines()
-        lis = []
-        for line in lines:
-            l = line.strip().split(' ')
-            l = [int(s) for s in l]
-            lis.append(l)
-        return lis
 
 
