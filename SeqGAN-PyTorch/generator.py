@@ -10,8 +10,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+
 class Generator(nn.Module):
     """Generator """
+
     def __init__(self, num_emb, emb_dim, hidden_dim, use_cuda):
         super(Generator, self).__init__()
         self.num_emb = num_emb
@@ -31,9 +33,10 @@ class Generator(nn.Module):
         """
         emb = self.emb(x)
         h0, c0 = self.init_hidden(x.size(0))
+        self.lstm.flatten_parameters()
         output, (h, c) = self.lstm(emb, (h0, c0))
         pred = self.softmax(self.lin(output.contiguous().view(-1, self.hidden_dim)))
-        return pred        
+        return pred
 
     def step(self, x, h, c):
         """
@@ -43,10 +46,10 @@ class Generator(nn.Module):
             c: (1, batch_size, hidden_dim), lstm cell state
         """
         emb = self.emb(x)
+        self.lstm.flatten_parameters()
         output, (h, c) = self.lstm(emb, (h, c))
         pred = F.softmax(self.lin(output.view(-1, self.hidden_dim)))
         return pred, h, c
-
 
     def init_hidden(self, batch_size):
         h = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
@@ -54,14 +57,14 @@ class Generator(nn.Module):
         if self.use_cuda:
             h, c = h.cuda(), c.cuda()
         return h, c
-    
+
     def init_params(self):
         for param in self.parameters():
             param.data.uniform_(-0.05, 0.05)
 
     def sample(self, batch_size, seq_len, x=None):
         res = []
-        flag = False # whether sample from zero
+        flag = False  # whether sample from zero
         if x is None:
             flag = True
         if flag:

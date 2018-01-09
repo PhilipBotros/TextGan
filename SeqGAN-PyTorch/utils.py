@@ -29,7 +29,7 @@ def generate_fibonacci_batch(batch_size, length):
 
 
 def generate_fibonacci(length):
-    fib = [np.random.randint(0, 10) for _ in range(2)]
+    fib = [np.random.randint(0, 4) for _ in range(2)]
     for i in range(length - 2):
         fib.append(fib[i] + fib[i + 1])
     return np.asarray(fib, dtype=np.int32)

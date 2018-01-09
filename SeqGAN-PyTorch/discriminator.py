@@ -8,39 +8,42 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
+
 
 class Discriminator(nn.Module):
-    """A CNN for text classification
+    """An LSTM for text classification
 
-    architecture: Embedding >> Convolution >> Max-pooling >> Softmax
+    architecture: Embedding >> LSTM >> Linear >> Softmax
     """
 
-    def __init__(self, num_classes, vocab_size, emb_dim, filter_sizes, num_filters, dropout):
+    def __init__(self, num_classes, vocab_size, emb_dim, batch_size, hidden_dim):
         super(Discriminator, self).__init__()
-        self.emb = nn.Embedding(vocab_size, emb_dim)
-        self.convs = nn.ModuleList([
-            nn.Conv2d(1, n, (f, emb_dim)) for (n, f) in zip(num_filters, filter_sizes)
-        ])
-        self.highway = nn.Linear(sum(num_filters), sum(num_filters))
-        self.dropout = nn.Dropout(p=dropout)
-        self.lin = nn.Linear(sum(num_filters), num_classes)
+
+        self.hidden_dim = hidden_dim
+        self.embedding_dim = emb_dim
+
+        self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
+        self.lstm = nn.LSTM(emb_dim, self.hidden_dim)
+        self.linear = nn.Linear(self.hidden_dim, num_classes)
         self.softmax = nn.LogSoftmax()
-        self.init_parameters()
-    
+        self.init_hidden(batch_size)
+
     def forward(self, x):
         """
         Args:
             x: (batch_size * seq_len)
         """
-        emb = self.emb(x).unsqueeze(1)  # batch_size * 1 * seq_len * emb_dim
-        convs = [F.relu(conv(emb)).squeeze(3) for conv in self.convs]  # [batch_size * num_filter * length]
-        pools = [F.max_pool1d(conv, conv.size(2)).squeeze(2) for conv in convs] # [batch_size * num_filter]
-        pred = torch.cat(pools, 1)  # batch_size * num_filters_sum
-        highway = self.highway(pred)
-        pred = F.sigmoid(highway) *  F.relu(highway) + (1. - F.sigmoid(highway)) * pred
-        pred = self.softmax(self.lin(self.dropout(pred)))
+        embeddings = self.embedding(x).view(x.data.shape[1], x.data.shape[0],
+                                            self.embedding_dim)  # seq_len * batch_size * emb_dim
+        lstm_out, hidden = self.lstm(embeddings, self.hidden)
+        logits = self.linear(lstm_out[-1, :, :])
+        pred = self.softmax(logits)
         return pred
 
-    def init_parameters(self):
-        for param in self.parameters():
-            param.data.uniform_(-0.05, 0.05)
+    def init_hidden(self, batch_size):
+        """
+        Hidden state zero initialization for a single layer LSTM.
+        """
+        self.hidden = (Variable(torch.zeros(1, batch_size, self.hidden_dim)),
+                       Variable(torch.zeros(1, batch_size, self.hidden_dim)))
