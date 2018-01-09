@@ -148,7 +148,7 @@ def main():
     # Define Networks
     generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
     discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim, BATCH_SIZE,
-                                  d_hidden_dim)
+                                  d_hidden_dim, opt.cuda)
 
     # real_data = read_file(POSITIVE_FILE)
 
