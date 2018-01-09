@@ -26,10 +26,10 @@ print(opt)
 # Basic Training Paramters
 SEED = 88
 BATCH_SIZE = 64
-TOTAL_BATCH = 100
+TOTAL_BATCH = 1000
 GENERATED_NUM = 10000
-POSITIVE_FILE = 'real.data'
-VOCAB_SIZE = 16
+POSITIVE_FILE = '../data/real.data'
+VOCAB_SIZE = 5003
 PRE_EPOCH_NUM = 1
 
 if opt.cuda is not None and opt.cuda >= 0:
@@ -58,9 +58,26 @@ def read_file(data_file):
     lis = []
     for line in lines:
         l = line.strip().split(' ')
-        l = [int(s) for s in l]
-        lis.append(l)
+
+        # Only load sequences of the set length
+        if len(l) == g_sequence_len:
+            try:
+                # Catch faulty sentences
+                l = [int(s) for s in l]
+            except:
+                continue
+            lis.append(l)
+
     return lis
+
+
+def create_vocab_dict(vocab_file):
+    with open(vocab_file, 'r') as f:
+        lines = f.readlines()
+    dic = {}
+    for i, line in enumerate(lines):
+        dic[i] = line.strip()
+    return dic
 
 
 def generate_samples(model, batch_size, generated_num):
@@ -76,6 +93,8 @@ def train_epoch(model, data_iter, criterion, optimizer):
     total_loss = 0.
     total_words = 0.
     for (data, target) in data_iter:
+        if data.shape[0] != BATCH_SIZE:
+            continue
         data = Variable(data)
         target = Variable(target)
         if opt.cuda:
@@ -145,14 +164,16 @@ def main():
     random.seed(SEED)
     np.random.seed(SEED)
 
+    idx_to_word = create_vocab_dict("../data/vocabulary.txt")
+
     # Define Networks
     generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
     discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim, BATCH_SIZE,
                                   d_hidden_dim, opt.cuda)
 
-    # real_data = read_file(POSITIVE_FILE)
+    real_data = read_file(POSITIVE_FILE)
 
-    real_data = utils.generate_fibonacci_batch(9984, g_sequence_len)
+    # real_data = utils.generate_fibonacci_batch(9984, g_sequence_len)
 
     if opt.cuda:
         generator = generator.cuda()
@@ -177,7 +198,11 @@ def main():
         # Train the generator for one step
         for it in range(1):
             samples = generator.sample(BATCH_SIZE, g_sequence_len)
-            print(samples[:10])
+
+            # Print some samples
+            for i in range(10):
+                print(' '.join([idx_to_word[idx] for idx in samples.data[i]]))
+
             # construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((BATCH_SIZE, 1)).type(torch.LongTensor)
             if samples.is_cuda:
@@ -186,7 +211,7 @@ def main():
             targets = Variable(samples.data).contiguous().view((-1,))
             # calculate the reward
             rewards = rollout.get_reward(samples, 5, discriminator)
-            rewards = Variable(torch.Tensor(rewards))
+            rewards = Variable(torch.Tensor(rewards)).contiguous().view((-1,))
             if opt.cuda:
                 rewards = torch.exp(rewards.cuda()).contiguous().view((-1,))
             prob = generator.forward(inputs)
@@ -200,7 +225,7 @@ def main():
 
         for _ in range(1):
             samples = generate_samples(generator, BATCH_SIZE, GENERATED_NUM)
-            dis_data_iter = DisDataIter(list(real_data), samples, BATCH_SIZE)
+            dis_data_iter = DisDataIter(real_data, samples, BATCH_SIZE)
             for _ in range(1):
                 discriminator.init_hidden(BATCH_SIZE)
                 loss = train_epoch(discriminator, dis_data_iter, dis_criterion, dis_optimizer)

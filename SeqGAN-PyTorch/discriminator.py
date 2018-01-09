@@ -29,7 +29,7 @@ class Discriminator(nn.Module):
         self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
         self.lstm = nn.LSTM(emb_dim, self.hidden_dim)
         self.linear = nn.Linear(self.hidden_dim, num_classes)
-        self.softmax = nn.LogSoftmax()
+        self.softmax = nn.LogSoftmax(dim=-1)
 
         # Model initialization
         self.init_hidden(batch_size)
