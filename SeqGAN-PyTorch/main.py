@@ -26,7 +26,7 @@ print(opt)
 # Basic Training Paramters
 SEED = 88
 BATCH_SIZE = 64
-TOTAL_BATCH = 10
+TOTAL_BATCH = 100
 GENERATED_NUM = 10000
 POSITIVE_FILE = 'real.data'
 VOCAB_SIZE = 16
@@ -150,7 +150,7 @@ def main():
     discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim, BATCH_SIZE,
                                   d_hidden_dim)
 
-    real_data = read_file(POSITIVE_FILE)
+    # real_data = read_file(POSITIVE_FILE)
 
     real_data = utils.generate_fibonacci_batch(9984, g_sequence_len)
 
