@@ -47,7 +47,6 @@ class GenDataIter(object):
         return data, target
 
 
-
 class DisDataIter(object):
     """ Toy data iter to load digits"""
 
@@ -56,7 +55,7 @@ class DisDataIter(object):
         self.batch_size = batch_size
         self.data = list(real_data_lis) + fake_data_lis
         self.labels = [1 for _ in range(len(real_data_lis))] +\
-                        [0 for _ in range(len(fake_data_lis))]
+            [0 for _ in range(len(fake_data_lis))]
         self.pairs = list(zip(self.data, self.labels))
         random.shuffle(self.pairs)
         self.data_num = len(self.data)
