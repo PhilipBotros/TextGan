@@ -12,9 +12,11 @@ from torch.autograd import Variable
 
 from generator import Generator
 from discriminator import Discriminator
-from target_lstm import TargetLSTM
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
+from helpers import read_file, create_vocab_dict, generate_samples, train_epoch
+from loss import GANLoss
+
 # ================== Parameter Definition =================
 
 parser = argparse.ArgumentParser(description='Training Parameter')
@@ -51,113 +53,7 @@ d_hidden_dim = 32
 # d_dropout = 0.75
 d_num_class = 2
 
-
-def read_file(data_file):
-    with open(data_file, 'r') as f:
-        lines = f.readlines()
-    lis = []
-    for line in lines:
-        l = line.strip().split(' ')
-
-        # Only load sequences of the set length
-        if len(l) == g_sequence_len:
-            try:
-                # Catch faulty sentences
-                l = [int(s) for s in l]
-            except:
-                continue
-            lis.append(l)
-
-    return lis
-
-
-def create_vocab_dict(vocab_file):
-    with open(vocab_file, 'r') as f:
-        lines = f.readlines()
-    dic = {}
-    for i, line in enumerate(lines):
-        dic[i] = line.strip()
-    return dic
-
-
-def generate_samples(model, batch_size, generated_num):
-    samples = []
-    for _ in range(int(generated_num / batch_size)):
-        sample = model.sample(batch_size, g_sequence_len).cpu().data.numpy().tolist()
-        samples.extend(sample)
-
-    return samples
-
-
-def train_epoch(model, data_iter, criterion, optimizer, full):
-    total_loss = 0.
-    total_words = 0.
-    for (data, target) in data_iter:
-        if data.shape[0] != BATCH_SIZE:
-            continue
-        data = Variable(data)
-        target = Variable(target)
-        if opt.cuda:
-            data, target = data.cuda(), target.cuda()
-        target = target.contiguous().view(-1)
-        pred = model.forward(data, full)
-        loss = criterion(pred, target)
-        total_loss += loss.data[0]
-        total_words += data.size(0) * data.size(1)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    data_iter.reset()
-
-    return total_loss / total_words
-
-
-def eval_epoch(model, data_iter, criterion):
-    total_loss = 0.
-    total_words = 0.
-    for (data, target) in data_iter:
-        data = Variable(data, volatile=True)
-        target = Variable(target, volatile=True)
-        if opt.cuda:
-            data, target = data.cuda(), target.cuda()
-        target = target.contiguous().view(-1)
-        pred = model.forward(data)
-        loss = criterion(pred, target)
-        total_loss += loss.data[0]
-        total_words += data.size(0) * data.size(1)
-    data_iter.reset()
-
-    return math.exp(total_loss / total_words)
-
-
-class GANLoss(nn.Module):
-    """Reward-Refined NLLLoss Function for adverserial training of Generator"""
-
-    def __init__(self):
-        super(GANLoss, self).__init__()
-
-    def forward(self, prob, target, reward):
-        """
-        Args:
-            prob: (N, C), torch Variable
-            target : (N, ), torch Variable
-            reward : (N, ), torch Variable
-        """
-        N = target.size(0)
-        C = prob.size(1)
-        one_hot = torch.zeros((N, C))
-        if prob.is_cuda:
-            one_hot = one_hot.cuda()
-        one_hot.scatter_(1, target.data.view((-1, 1)), 1)
-        one_hot = one_hot.type(torch.ByteTensor)
-        one_hot = Variable(one_hot)
-        if prob.is_cuda:
-            one_hot = one_hot.cuda()
-        loss = torch.masked_select(prob, one_hot)
-        loss = loss * reward
-        loss = -torch.sum(loss)
-
-        return loss
+#==========================================================
 
 
 def main():
@@ -171,7 +67,7 @@ def main():
     discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim,
                                   d_hidden_dim, opt.cuda)
 
-    real_data = read_file(POSITIVE_FILE)
+    real_data = read_file(POSITIVE_FILE, g_sequence_len)
 
     # real_data = utils.generate_fibonacci_batch(9984, g_sequence_len)
 
@@ -224,11 +120,11 @@ def main():
         rollout.update_params()
 
         for _ in range(1):
-            samples = generate_samples(generator, BATCH_SIZE, GENERATED_NUM)
+            samples = generate_samples(generator, BATCH_SIZE, GENERATED_NUM, g_sequence_len)
             dis_data_iter = DisDataIter(real_data, samples, BATCH_SIZE, opt.full)
             for _ in range(1):
                 loss = train_epoch(discriminator, dis_data_iter,
-                                   dis_criterion, dis_optimizer, opt.full)
+                                   dis_criterion, dis_optimizer, opt.full, BATCH_SIZE, opt.cuda)
                 print('Batch [%d] Loss: %f' % (total_batch, loss))
 
 
