@@ -32,6 +32,7 @@ class Vocabulary(object):
 
         # Convert to id directly for easier debugging wrt original implementation
         self.word_to_idx = {word: i for i, word in enumerate(self.words)}
+        self.idx_to_word = {i: word for i, word in enumerate(self.words)}
         self.sentences = [''.join(convert_sentence(sentence, self.word_to_idx))
                           for sentence in self.sentences]
 
@@ -41,7 +42,7 @@ class Vocabulary(object):
         open(out_path + 'vocabulary.txt', 'w').writelines('\n'.join(self.words))
 
         # Save in id format direct;y for easier debugging wrt original implementation
-        open(out_path + 'training_data.txt', 'w').writelines('\n'.join(self.sentences))
+        open(out_path + 'real.data', 'w').writelines('\n'.join(self.sentences))
 
 #---------------------------------------------------------------------------------------------------
 # tokenizer
