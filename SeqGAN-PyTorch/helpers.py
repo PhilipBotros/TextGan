@@ -1,7 +1,3 @@
-import os
-import random
-import math
-import argparse
 import numpy as np
 
 from torch.autograd import Variable
@@ -82,4 +78,12 @@ def eval_epoch(model, data_iter, criterion, is_cuda):
         total_words += data.size(0) * data.size(1)
     data_iter.reset()
 
-    return math.exp(total_loss / total_words)
+    return total_loss / total_words
+
+
+def print_flags(opt):
+    """
+    Prints all entries in options variable.
+    """
+    for key, value in vars(opt).items():
+        print(key + ' : ' + str(value))
