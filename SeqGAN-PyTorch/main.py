@@ -16,6 +16,10 @@ from settings import parse_arguments
 
 
 def main():
+    """
+    Training Script for SeqGAN on News titles.
+    """
+
     if opt.cuda is not None and opt.cuda >= 0:
         torch.cuda.set_device(opt.cuda)
         opt.cuda = True
