@@ -1,4 +1,4 @@
- 
+
 import os
 import random
 import math
@@ -15,7 +15,6 @@ from discriminator import Discriminator
 from target_lstm import TargetLSTM
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
-import utils
 # ================== Parameter Definition =================
 
 parser = argparse.ArgumentParser(description='Training Parameter')
