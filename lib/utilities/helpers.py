@@ -90,3 +90,10 @@ def print_flags(opt):
     """
     for key, value in vars(opt).items():
         print(key + ' : ' + str(value))
+
+def print_samples(num, idx_to_word, samples):
+    """
+    Print given number of samples.
+    """
+    for i in range(num):
+        print(' '.join([idx_to_word[idx] for idx in samples.data[i]]))

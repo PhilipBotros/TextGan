@@ -9,6 +9,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
+import sys
+sys.path.append('../model')
+sys.path.append('../utilities')
+sys.path.append('../../')
+
 from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
@@ -44,8 +49,8 @@ if opt.das:
     POSITIVE_FILE = '/home/pbotros/TextGan/data/real.data'
     idx_to_word = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary.txt")
 else:
-    POSITIVE_FILE = '../data/real.data'
-    idx_to_word = create_vocab_dict("../data/vocabulary.txt")
+    POSITIVE_FILE = '../../data/real.data'
+    idx_to_word = create_vocab_dict("../../data/vocabulary.txt")
 
 GEN_PATH = 'generator.pt'
 SAVE_PATH = 'discriminator.pt'

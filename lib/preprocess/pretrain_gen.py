@@ -9,6 +9,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
+import sys
+sys.path.append('../model')
+sys.path.append('../utilities')
+sys.path.append('../../')
+
 from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
@@ -31,15 +36,15 @@ if opt.das:
     POSITIVE_FILE = '/home/pbotros/TextGan/data/real.data'
     idx_to_word = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary.txt")
 else:
-    POSITIVE_FILE = '../data/real.data'
-    idx_to_word = create_vocab_dict("../data/vocabulary.txt")
+    POSITIVE_FILE = '../../data/real.data'
+    idx_to_word = create_vocab_dict("../../data/vocabulary.txt")
 
 SEED = 88
 BATCH_SIZE = 64
 TOTAL_BATCH = 1000
 GENERATED_NUM = 100000
 VOCAB_SIZE = 5003
-PRE_EPOCH_NUM = 1
+NR_EPOCHS = 100000
 
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
 
@@ -54,8 +59,7 @@ if os.path.isfile(SAVE_PATH):
 
 if opt.cuda:
     generator = generator.cuda()
-# Generate toy data using target lstm
-nr_epochs = 100
+
 # Pretrain Generator using MLE
 gen_criterion = nn.NLLLoss(size_average=False)
 gen_optimizer = optim.Adam(generator.parameters())
@@ -65,7 +69,7 @@ if opt.cuda:
 gen_data_iter = GenDataIter(real_data, BATCH_SIZE)
 
 print('Pretrain with MLE ...')
-for i in range(nr_epochs):
+for i in range(NR_EPOCHS):
     loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
                          BATCH_SIZE, opt.cuda)
     print('Epoch [%d] Model Loss: %f'% (i, loss))
