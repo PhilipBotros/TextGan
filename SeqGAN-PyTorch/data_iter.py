@@ -4,8 +4,6 @@ import os
 import random
 import math
 
-import tqdm
-
 import numpy as np
 import torch
 
@@ -13,11 +11,11 @@ import torch
 class GenDataIter(object):
     """ Toy data iter to load digits"""
 
-    def __init__(self, data_file, batch_size):
+    def __init__(self, data_lis, batch_size):
         super(GenDataIter, self).__init__()
         self.batch_size = batch_size
-        self.data_lis = self.read_file(data_file)
-        self.data_num = len(self.data_lis)
+        self.data_lis = data_lis
+        self.data_num = len(self.data_lis) 
         self.indices = range(self.data_num)
         self.num_batches = int(math.ceil(float(self.data_num) / self.batch_size))
         self.idx = 0
@@ -41,6 +39,8 @@ class GenDataIter(object):
         index = self.indices[self.idx:self.idx + self.batch_size]
         d = [self.data_lis[i] for i in index]
         d = torch.LongTensor(np.asarray(d, dtype='int64'))
+        if d.shape[0] != self.batch_size:
+            raise StopIteration
         data = torch.cat([torch.zeros(self.batch_size, 1).long(), d], dim=1)
         target = torch.cat([d, torch.zeros(self.batch_size, 1).long()], dim=1)
         self.idx += self.batch_size
