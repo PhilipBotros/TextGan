@@ -50,12 +50,20 @@ class GenDataIter(object):
 class DisDataIter(object):
     """ Toy data iter to load digits"""
 
-    def __init__(self, real_data_lis, fake_data_lis, batch_size):
+    def __init__(self, real_data_lis, fake_data_lis, batch_size, full):
         super(DisDataIter, self).__init__()
         self.batch_size = batch_size
         self.data = list(real_data_lis) + fake_data_lis
-        self.labels = [1 for _ in range(len(real_data_lis))] +\
-            [0 for _ in range(len(fake_data_lis))]
+
+        if full:
+            # Target for every word in the sequence
+            self.labels = [[1 for _ in range(len(real_data_lis[0]))] for _ in range(len(real_data_lis))] +\
+                [[0 for _ in range(len(fake_data_lis[0]))] for _ in range(len(fake_data_lis))]
+        else:
+            # Only a target for every sequence
+            self.labels = [1 for _ in range(len(real_data_lis))] +\
+                [0 for _ in range(len(fake_data_lis))]
+
         self.pairs = list(zip(self.data, self.labels))
         random.shuffle(self.pairs)
         self.data_num = len(self.data)

@@ -17,34 +17,43 @@ class Discriminator(nn.Module):
     architecture: Embedding >> LSTM >> Linear >> Softmax
     """
 
-    def __init__(self, num_classes, vocab_size, emb_dim, batch_size, hidden_dim, use_cuda):
+    def __init__(self, num_classes, vocab_size, emb_dim, hidden_dim, use_cuda):
         super(Discriminator, self).__init__()
 
         # Settings
         self.hidden_dim = hidden_dim
         self.embedding_dim = emb_dim
+        self.num_classes = num_classes
         self.use_cuda = use_cuda
 
         # Layers
         self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
-        self.lstm = nn.LSTM(emb_dim, self.hidden_dim)
+        self.lstm = nn.LSTM(emb_dim, self.hidden_dim, batch_first=True)
         self.linear = nn.Linear(self.hidden_dim, num_classes)
         self.softmax = nn.LogSoftmax(dim=-1)
 
         # Model initialization
-        self.init_hidden(batch_size)
         self.init_params()
 
-    def forward(self, x):
+    def forward(self, x, full):
         """
         Args:
-            x: (batch_size * seq_len)
+            x: (batch_size, seq_len)
+            full: False when only the last output should be returned
+        Out:
+            pred: (batch_size * seq_len, num_classes) or (batch_size, num_classes)
         """
-        embeddings = self.embedding(x).view(x.data.shape[1], x.data.shape[0],
-                                            self.embedding_dim)  # seq_len * batch_size * emb_dim
-        lstm_out, hidden = self.lstm(embeddings, self.hidden)
-        logits = self.linear(lstm_out[-1, :, :])
-        pred = self.softmax(logits)
+        embeddings = self.embedding(x)  # (batch_size, seq_len, emb_dim)
+        self.init_hidden(x.data.shape[0])
+        lstm_out, _ = self.lstm(embeddings, self.hidden)
+
+        if full:
+            logits = self.linear(lstm_out.contiguous().view(-1, self.hidden_dim))
+            pred = self.softmax(logits)
+        else:
+            logits = self.linear(lstm_out[:, -1, :])
+            pred = self.softmax(logits)
+
         return pred
 
     def init_hidden(self, batch_size):

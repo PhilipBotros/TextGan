@@ -20,6 +20,7 @@ import utils
 
 parser = argparse.ArgumentParser(description='Training Parameter')
 parser.add_argument('--cuda', action='store', default=None, type=int)
+parser.add_argument('--full', action='store', default=False, type=bool)
 opt = parser.parse_args()
 print(opt)
 
@@ -89,7 +90,7 @@ def generate_samples(model, batch_size, generated_num):
     return samples
 
 
-def train_epoch(model, data_iter, criterion, optimizer):
+def train_epoch(model, data_iter, criterion, optimizer, full):
     total_loss = 0.
     total_words = 0.
     for (data, target) in data_iter:
@@ -100,7 +101,7 @@ def train_epoch(model, data_iter, criterion, optimizer):
         if opt.cuda:
             data, target = data.cuda(), target.cuda()
         target = target.contiguous().view(-1)
-        pred = model.forward(data)
+        pred = model.forward(data, full)
         loss = criterion(pred, target)
         total_loss += loss.data[0]
         total_words += data.size(0) * data.size(1)
@@ -109,7 +110,7 @@ def train_epoch(model, data_iter, criterion, optimizer):
         optimizer.step()
     data_iter.reset()
 
-    return math.exp(total_loss / total_words)
+    return total_loss / total_words
 
 
 def eval_epoch(model, data_iter, criterion):
@@ -168,7 +169,7 @@ def main():
 
     # Define Networks
     generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
-    discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim, BATCH_SIZE,
+    discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim,
                                   d_hidden_dim, opt.cuda)
 
     real_data = read_file(POSITIVE_FILE)
@@ -210,7 +211,7 @@ def main():
             inputs = Variable(torch.cat([zeros, samples.data], dim=1)[:, :-1].contiguous())
             targets = Variable(samples.data).contiguous().view((-1,))
             # calculate the reward
-            rewards = rollout.get_reward(samples, 5, discriminator)
+            rewards = rollout.get_reward(samples, 5, discriminator, opt.full)
             rewards = Variable(torch.Tensor(rewards)).contiguous().view((-1,))
             if opt.cuda:
                 rewards = torch.exp(rewards.cuda()).contiguous().view((-1,))
@@ -225,10 +226,10 @@ def main():
 
         for _ in range(1):
             samples = generate_samples(generator, BATCH_SIZE, GENERATED_NUM)
-            dis_data_iter = DisDataIter(real_data, samples, BATCH_SIZE)
+            dis_data_iter = DisDataIter(real_data, samples, BATCH_SIZE, opt.full)
             for _ in range(1):
-                discriminator.init_hidden(BATCH_SIZE)
-                loss = train_epoch(discriminator, dis_data_iter, dis_criterion, dis_optimizer)
+                loss = train_epoch(discriminator, dis_data_iter,
+                                   dis_criterion, dis_optimizer, opt.full)
                 print('Batch [%d] Loss: %f' % (total_batch, loss))
 
 
