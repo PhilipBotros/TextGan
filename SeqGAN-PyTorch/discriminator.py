@@ -27,7 +27,7 @@ class Discriminator(nn.Module):
 
         # Layers
         self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
-        self.lstm = nn.LSTM(emb_dim, self.hidden_dim)
+        self.lstm = nn.LSTM(emb_dim, self.hidden_dim, batch_first=True)
         self.linear = nn.Linear(self.hidden_dim, num_classes)
         self.softmax = nn.LogSoftmax(dim=-1)
 
@@ -40,10 +40,9 @@ class Discriminator(nn.Module):
         Args:
             x: (batch_size * seq_len)
         """
-        embeddings = self.embedding(x).view(x.data.shape[1], x.data.shape[0],
-                                            self.embedding_dim)  # seq_len * batch_size * emb_dim
+        embeddings = self.embedding(x) # seq_len * batch_size * emb_dim
         lstm_out, hidden = self.lstm(embeddings, self.hidden)
-        logits = self.linear(lstm_out[-1, :, :])
+        logits = self.linear(lstm_out[:, -1, :])
         pred = self.softmax(logits)
         return pred
 
