@@ -44,7 +44,7 @@ def generate_samples(model, batch_size, generated_num, seq_len):
     return samples
 
 
-def train_epoch(model, data_iter, criterion, optimizer, full, batch_size, is_cuda):
+def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, full=None):
     total_loss = 0.
     total_words = 0.
     for (data, target) in data_iter:
@@ -55,7 +55,10 @@ def train_epoch(model, data_iter, criterion, optimizer, full, batch_size, is_cud
         if is_cuda:
             data, target = data.cuda(), target.cuda()
         target = target.contiguous().view(-1)
-        pred = model.forward(data, full)
+        if full:
+            pred = model.forward(data, full)
+        else:
+            pred = model.forward(data)
         loss = criterion(pred, target)
         total_loss += loss.data[0]
         total_words += data.size(0) * data.size(1)
