@@ -13,18 +13,15 @@ from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
-from helpers import read_file, create_vocab_dict, generate_samples, train_epoch
+from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags
+from settings import parse_arguments
 
 g_sequence_len = 5
 SAVE_PATH = 'generator.pt'
 SAVE_EVERY = 100
 
-parser = argparse.ArgumentParser(description='Training Parameter')
-parser.add_argument('--cuda', action='store', default=None, type=int)
-parser.add_argument('--full', action='store', default=True, type=bool)
-parser.add_argument('--das', action='store', default=False, type=bool)
-opt = parser.parse_args()
-print(opt)
+opt = parse_arguments()
+print_flags(opt)
 
 if opt.cuda is not None and opt.cuda >= 0:
     torch.cuda.set_device(opt.cuda)
