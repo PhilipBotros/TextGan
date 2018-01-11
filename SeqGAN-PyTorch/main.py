@@ -95,7 +95,7 @@ def main():
             dis_data_iter = DisDataIter(real_data, samples, opt.batch_size, opt.lstm_rewards)
             for _ in range(1):
                 loss = train_epoch(discriminator, dis_data_iter,
-                                   dis_criterion, dis_optimizer, opt.lstm_rewards, opt.batch_size, opt.cuda)
+                                   dis_criterion, dis_optimizer, opt.batch_size, opt.cuda, opt.lstm_rewards)
                 print('Batch [%d] Loss: %f' % (opt.num_epochs, loss))
 
 

@@ -35,7 +35,7 @@ class Discriminator(nn.Module):
         # Model initialization
         self.init_params()
 
-    def forward(self, x, full):
+    def forward(self, x, full=None):
         """
         Args:
             x: (batch_size, seq_len)
