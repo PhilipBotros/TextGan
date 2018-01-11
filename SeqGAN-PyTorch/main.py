@@ -22,8 +22,8 @@ def main():
 
     if opt.positive_file is None:
         if opt.das:
-            opt.positive_file = '/home/tpelsmae/TextGan/data/real.data'
-            opt.vocab_file = '/home/tpelsmae/TextGan/data/vocabulary.txt'
+            opt.positive_file = '/var/scratch/pbotros/data/real.data'
+            opt.vocab_file = '/var/scratch/pbotros/data/vocabulary.txt'
         else:
             opt.positive_file = '../data/real.data'
             opt.vocab_file = '../data/vocabulary.txt'

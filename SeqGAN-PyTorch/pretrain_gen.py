@@ -40,7 +40,7 @@ else:
 SEED = 88
 BATCH_SIZE = 64
 TOTAL_BATCH = 1000
-GENERATED_NUM = 10000
+GENERATED_NUM = 100000
 VOCAB_SIZE = 5003
 PRE_EPOCH_NUM = 1
 
@@ -71,7 +71,7 @@ print('Pretrain with MLE ...')
 for i in range(nr_epochs):
     loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
                          BATCH_SIZE, opt.cuda)
-    print('Epoch [%d] Model Loss: %f'% (epoch, loss))
+    print('Epoch [%d] Model Loss: %f'% (i, loss))
     samples = generator.sample(BATCH_SIZE, g_sequence_len)
 
     # Print some samples
