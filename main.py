@@ -11,7 +11,7 @@ To pretrain the Discriminator and Generator pretrain_discr.py and pretrain.gen.p
 respectively. It is advisable to first pretrain a Generator, that provides fake data for pretraining
 the Discriminator.
 
-During training, the script will print ten generated samples every epoch as a qualitative measure
+During training, the script will print ten generated samples every epoch as a measure
 of sample quality. No quantitative measures have been implemented. The Discriminator loss is also
 printed to the terminal, which is informative for the Discriminator-Generator balance (the loss
 should neither be too high or too low).
@@ -77,6 +77,16 @@ def main():
     if opt.cuda:
         generator = generator.cuda()
         discriminator = discriminator.cuda()
+
+    # Load pretrained Generator and Discriminator when provided
+    if os.path.isfile(opt.gen_path):
+        generator.load_state_dict(torch.load(opt.gen_path))
+    else:
+        print("No pretrained Generator found; model starting from scratch.")
+    if os.path.isfile(opt.dis_path):
+        discriminator.load_state_dict(torch.load(opt.dis_path))
+    else:
+        print("No pretrained Discriminator found; model starting from scratch.")
 
     # Loss and optimizer for the Generator and Discriminator
     gen_loss = GANLoss()

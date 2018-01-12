@@ -25,6 +25,10 @@ def parse_arguments():
                         help="Path to file that contains real sequences.")
     parser.add_argument('--vocab_file', default=None, type=str,
                         help="Path to file that contains training vocabulary.")
+    parser.add_argument("--gen_path", default=None, type=str,
+                        help="Path to file that contains pretrained Generator")
+    parser.add_argument("--dis_path", default=None, type=str,
+                        help="Path to file that contains pretrained Discriminator")
 
     # Training settings
     parser.add_argument('--seed', default=88, type=int, help="Random seed.")
