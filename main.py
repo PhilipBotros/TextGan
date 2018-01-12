@@ -1,3 +1,31 @@
+"""
+Training Script for SeqGAN on news titles.
+
+The model is trained with the signalmedia news dataset.
+With create_vocab.py a vocabulary of specified size and data file in the correct format
+can be created from the raw signalmedia JSON. This model can be trained on many sequential (text) data;
+to do so a new dataset handler (see vocabulary.py) has to be written that converts raw data to the
+correct format (one-hot encoded sequences).
+
+To pretrain the Discriminator and Generator pretrain_discr.py and pretrain.gen.py can be used
+respectively. It is advisable to first pretrain a Generator, that provides fake data for pretraining
+the Discriminator.
+
+During training, the script will print ten generated samples every epoch as a qualitative measure
+of sample quality. No quantitative measures have been implemented. The Discriminator loss is also
+printed to the terminal, which is informative for the Discriminator-Generator balance (the loss
+should neither be too high or too low).
+
+Various model and training settings can be controlled via the command line. These can be found with
+description in settings.py. A help message can also be displayed via the command line.
+
+The model is built with the PyTorch neural network library and optimized for cuda.
+
+Based on the Pytorch-SeqGAN implementation by ZiJianZhao (https://github.com/ZiJianZhao/SeqGAN-PyTorch).
+Authors: Philip Botros and Tom Pelsmaeker
+"""
+
+
 import random
 import numpy as np
 
@@ -13,6 +41,7 @@ from lib.utilities.data_iter import GenDataIter, DisDataIter
 from lib.utilities.helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags, print_samples
 from lib.model.loss import GANLoss
 from settings import parse_arguments
+
 
 def main():
     """
