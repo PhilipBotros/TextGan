@@ -80,4 +80,4 @@ for i in range(NR_EPOCHS):
         print('Epoch [%d], loss: %f' % (i, loss))
 
     if i % SAVE_EVERY == 0:
-        torch.save(generator.state_dict(), SAVE_PATH)
+        torch.save(discriminator.state_dict(), SAVE_PATH)
