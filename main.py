@@ -25,7 +25,7 @@ Based on the Pytorch-SeqGAN implementation by ZiJianZhao (https://github.com/ZiJ
 Authors: Philip Botros and Tom Pelsmaeker
 """
 
-
+import os
 import random
 import numpy as np
 
@@ -55,9 +55,9 @@ def main():
 
     if opt.positive_file is None:
         # Use default data paths if none are specified
-        if opt.das:
-            opt.positive_file = '/var/scratch/pbotros/data/real.data'
-            opt.vocab_file = '/var/scratch/pbotros/data/vocabulary.txt'
+        if opt.remote:
+            opt.positive_file = '$HOME/data/real.data'
+            opt.vocab_file = '$HOME/data/vocabulary.txt'
         else:
             opt.positive_file = './data/real.data'
             opt.vocab_file = './data/vocabulary.txt'

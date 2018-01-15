@@ -18,7 +18,7 @@ def parse_arguments():
     # Device settings
     parser.add_argument('--cuda', default=None, type=int,
                         help="Device number of GPU, None when CPU is used.")
-    parser.add_argument('--das', default=False, type=bool, help="Are we on the DAS.")
+    parser.add_argument('--remote', default=False, type=bool, help="True when we run on a server.")
 
     # Path settings
     parser.add_argument('--positive_file', default=None, type=str,
@@ -44,6 +44,8 @@ def parse_arguments():
     parser.add_argument('--num_class', default=2, type=int,
                         help="Number of Discriminator output classes.")
     parser.add_argument('--seq_len', default=5, type=int, help="Sequence length.")
+    parser.add_argument('--save_every', default=100, type=int,
+                        help="Save every X number of epochs.")
 
     # Model settings
     parser.add_argument('--gen_emb_dim', default=32, type=int,
