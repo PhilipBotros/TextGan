@@ -56,8 +56,8 @@ def main():
     if opt.positive_file is None:
         # Use default data paths if none are specified
         if opt.remote:
-            opt.positive_file = '$HOME/data/real.data'
-            opt.vocab_file = '$HOME/data/vocabulary.txt'
+            opt.positive_file = '/home/sdemo069/TextGan/data/real.data'
+            opt.vocab_file = '/home/sdemo069/TextGan/data/vocabulary.txt'
         else:
             opt.positive_file = './data/real.data'
             opt.vocab_file = './data/vocabulary.txt'
@@ -78,13 +78,21 @@ def main():
         generator = generator.cuda()
         discriminator = discriminator.cuda()
 
+    # Default model paths
+    if opt.gen_path is None:
+        opt.gen_path = 'generator.pt'
+    if opt.dis_path is None:
+        opt.dis_path = 'discriminator.pt'
+
     # Load pretrained Generator and Discriminator when provided
     if os.path.isfile(opt.gen_path):
         generator.load_state_dict(torch.load(opt.gen_path))
+        print("Loading generator...")
     else:
         print("No pretrained Generator found; model starting from scratch.")
     if os.path.isfile(opt.dis_path):
         discriminator.load_state_dict(torch.load(opt.dis_path))
+        print("Loading discriminator...")
     else:
         print("No pretrained Discriminator found; model starting from scratch.")
 
@@ -139,6 +147,10 @@ def main():
             loss = train_epoch(discriminator, dis_data_iter,
                                dis_loss, dis_optimizer, opt.batch_size, opt.cuda, opt.lstm_rewards)
             print('Batch [%d] Loss: %f' % (num_epochs, loss))
+
+        if num_epochs % opt.save_every == 0:
+            torch.save(discriminator.state_dict(), opt.dis_path)
+            torch.save(generator.state_dict(), opt.gen_path)
 
 
 if __name__ == '__main__':
