@@ -14,10 +14,11 @@ from torch.autograd import Variable
 class Generator(nn.Module):
     """Generator """
 
-    def __init__(self, vocab_size, hidden_dim, use_cuda):
+    def __init__(self, vocab_size, hidden_dim, num_layers, use_cuda):
         super(Generator, self).__init__()
         self.emb_dim = emb_dim
         self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
         self.use_cuda = use_cuda
 
         # One hot encodings
@@ -25,7 +26,7 @@ class Generator(nn.Module):
         self.emb.weight.data = torch.eye(vocab_size)
         self.emb.weight.requires_grad = False
 
-        self.lstm = nn.LSTM(vocab_size, hidden_dim, batch_first=True)
+        self.lstm = nn.LSTM(emb_dim, hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.lin = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
         self.init_params()
@@ -56,8 +57,8 @@ class Generator(nn.Module):
         return pred, h, c
 
     def init_hidden(self, batch_size):
-        h = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
-        c = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
+        h = Variable(torch.zeros((self.num_layers, batch_size, self.hidden_dim)))
+        c = Variable(torch.zeros((self.num_layers, batch_size, self.hidden_dim)))
         if self.use_cuda:
             h, c = h.cuda(), c.cuda()
         return h, c

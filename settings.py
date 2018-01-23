@@ -46,13 +46,11 @@ def parse_arguments():
     parser.add_argument('--seq_len', default=30, type=int, help="Number of characters generated")
 
     # Model settings
-    parser.add_argument('--gen_emb_dim', default=32, type=int,
-                        help="Embedding size of the Generator.")
-    parser.add_argument('--gen_hid_dim', default=32, type=int,
+    parser.add_argument('--gen_num_layers', default=2, type=int,
+                        help="Number of layers of the Generator.")
+    parser.add_argument('--gen_hid_dim', default=128, type=int,
                         help="Hidden layer size of the Generator.")
-    parser.add_argument('--dis_emb_dim', default=64, type=int,
-                        help="Embedding size of the Discriminator")
-    parser.add_argument('-dis_hid_dim', default=32, type=int,
+    parser.add_argument('-dis_hid_dim', default=128, type=int,
                         help="Hidden layer size of the Discriminator")
 
     return parser.parse_args()

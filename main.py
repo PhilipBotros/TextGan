@@ -71,7 +71,7 @@ def main():
     real_data = read_file(opt.positive_file, opt.seq_len)
 
     # Define Networks
-    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.cuda)
+    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.gen_num_layers, opt.cuda)
     discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_emb_dim,
                                   opt.dis_hid_dim, opt.cuda)
     if opt.cuda:
