@@ -28,14 +28,13 @@ class Vocabulary(object):
         index_start_token = len(self.char_to_idx) + 1
         self.char_to_idx[self.start_token] = index_start_token
         self.idx_to_char = {i: char for i, char in enumerate(self.chars)}
-
+        self.idx_to_char[index_start_token] = self.start_token
 
         self.sentences = [''.join(convert_sentence(sentence, self.char_to_idx))
                           for sentence in self.sentences]
 
     def save_vocab(self, out_path):
 
-        open(out_path + 'vocabulary_char.txt', 'w').writelines('\n'.join(self.chars))
         with open('idx_to_char.json', 'w') as f:
             json.dump(self.idx_to_char, f)
 
@@ -44,9 +43,10 @@ class Vocabulary(object):
 
 #---------------------------------------------------------------------------------------------------
 
+
 def convert_sentence(sentence, char_to_idx):
 
-    sentence = str(char_to_idx['<SOS>']) + ' ' + ' '.join(str(char_to_idx[char]) for char in sentence)
+    sentence = str(char_to_idx['<SOS>']) + ' ' + \
+        ' '.join(str(char_to_idx[char]) for char in sentence)
 
     return sentence
-
