@@ -16,7 +16,6 @@ class Generator(nn.Module):
 
     def __init__(self, vocab_size, hidden_dim, num_layers, use_cuda):
         super(Generator, self).__init__()
-        self.emb_dim = emb_dim
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.use_cuda = use_cuda
@@ -26,7 +25,7 @@ class Generator(nn.Module):
         self.emb.weight.data = torch.eye(vocab_size)
         self.emb.weight.requires_grad = False
 
-        self.lstm = nn.LSTM(emb_dim, hidden_dim, num_layers=self.num_layers, batch_first=True)
+        self.lstm = nn.LSTM(vocab_size, hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.lin = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
         self.init_params()

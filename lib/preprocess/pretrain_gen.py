@@ -52,6 +52,7 @@ VOCAB_SIZE = 99
 NR_EPOCHS = 100000
 
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
+print(len(real_data))
 
 print(''.join([idx_to_char[str(idx)] for idx in real_data[10]]))
 
@@ -60,7 +61,7 @@ g_hidden_dim = 32
 g_num_layers = 2
 
 # Define Networks
-generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, g_num_layers, opt.cuda)
+generator = Generator(VOCAB_SIZE, g_hidden_dim, g_num_layers, opt.cuda)
 
 if os.path.isfile(SAVE_PATH):
     generator.load_state_dict(torch.load(SAVE_PATH))
@@ -70,7 +71,8 @@ if opt.cuda:
 
 # Pretrain Generator using MLE
 gen_criterion = nn.NLLLoss(size_average=False)
-gen_optimizer = optim.Adam(generator.parameters())
+parameters = filter(lambda p: p.requires_grad, generator.parameters())
+gen_optimizer = optim.Adam(parameters)
 if opt.cuda:
     gen_criterion = gen_criterion.cuda()
 
@@ -79,14 +81,13 @@ gen_data_iter = GenDataIter(real_data, BATCH_SIZE)
 print('Pretrain with MLE ...')
 for i in range(NR_EPOCHS):
     loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
-                         BATCH_SIZE, opt.cuda)
-    print('Epoch [%d] Model Loss: %f'% (i, loss))
+                       BATCH_SIZE, opt.cuda)
+    print('Epoch [%d] Model Loss: %f' % (i, loss))
     samples = generator.sample(BATCH_SIZE, g_sequence_len)
 
     # Print some samples
     for j in range(10):
         print(''.join([idx_to_char[str(idx)] for idx in samples.data[j]]))
-
 
     if i % SAVE_EVERY == 0:
         torch.save(generator.state_dict(), SAVE_PATH)
