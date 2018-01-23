@@ -11,10 +11,10 @@ def read_file(data_file, seq_len):
         l = line.strip().split(' ')
 
         # Only load sequences of the set length
-        if len(l) >= seq_len:
+        if len(l) > seq_len:
             try:
                 # Catch faulty sentences
-                l = [int(s) for i, s in enumerate(l) if i < seq_len]
+                l = [int(s) for i, s in enumerate(l) if i <= seq_len]
             except:
                 continue
             lis.append(l)
