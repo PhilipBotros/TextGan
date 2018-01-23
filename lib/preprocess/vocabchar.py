@@ -18,7 +18,6 @@ class Vocabulary(object):
         with open(self.file, 'r') as f:
             for article in reader(f):
                 title = unidecode(article['title']).strip()
-                print(title)
                 self.sentences.append(title)
                 self.chars.update(title)
 
@@ -28,9 +27,6 @@ class Vocabulary(object):
 
         self.sentences = [''.join(convert_sentence(sentence, self.char_to_idx))
                           for sentence in self.sentences]
-
-        print(self.sentences[0])
-        print(''.join([self.idx_to_char[int(idx)] for idx in self.sentences[0].split()]))
 
     def save_vocab(self, out_path):
 
