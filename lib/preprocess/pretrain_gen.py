@@ -33,12 +33,10 @@ if opt.cuda is not None and opt.cuda >= 0:
     torch.cuda.set_device(opt.cuda)
     opt.cuda = True
 
-if opt.das:
-    POSITIVE_FILE = os.join(os.get_cwd(), '../../data/real_char.data')
-    idx_to_char = create_vocab_dict(os.join(os.get_cwd(), '../../data/vocabulary_char.txt'))
-else:
-    POSITIVE_FILE = '../../data/real_char.data'
-    idx_to_char = create_vocab_dict("../../data/vocabulary_char.txt")
+
+POSITIVE_FILE = os.path.join(os.getcwd(), '../../data/real_char.data')
+idx_to_char = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
+
 
 SEED = 88
 BATCH_SIZE = 64
