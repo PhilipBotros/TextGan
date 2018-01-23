@@ -10,7 +10,9 @@ class Vocabulary(object):
 
         self.file = filename
         self.sentences = list()
+        self.start_token = '<SOS>'
         self.chars = set()
+        self.chars.update(self.start_token)
         self.create_vocab()
 
     def create_vocab(self):
@@ -23,7 +25,10 @@ class Vocabulary(object):
 
         # Convert to id directly for easier debugging wrt original implementation
         self.char_to_idx = {char: i for i, char in enumerate(self.chars)}
+        index_start_token = len(self.char_to_idx) + 1
+        self.char_to_idx[self.start_token] = index_start_token
         self.idx_to_char = {i: char for i, char in enumerate(self.chars)}
+
 
         self.sentences = [''.join(convert_sentence(sentence, self.char_to_idx))
                           for sentence in self.sentences]
@@ -41,7 +46,7 @@ class Vocabulary(object):
 
 def convert_sentence(sentence, char_to_idx):
 
-    sentence = ' '.join(str(char_to_idx[char]) for char in sentence)
+    sentence = str(char_to_idx['<SOS>']) + ' ' + ' '.join(str(char_to_idx[char]) for char in sentence)
 
     return sentence
 

@@ -40,23 +40,15 @@ else:
     POSITIVE_FILE = '../../data/real_char.data'
     idx_to_char = create_vocab_dict("../../data/vocabulary_char.txt")
 
-
-with open('../../idx_to_char.json', 'r') as f:
-    idx_to_char = json.load(f)
-
 SEED = 88
 BATCH_SIZE = 64
 TOTAL_BATCH = 1000
 GENERATED_NUM = 100000
-VOCAB_SIZE = 99
+VOCAB_SIZE = 100
 NR_EPOCHS = 100000
 
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
-print(len(real_data))
 
-print(''.join([idx_to_char[str(idx)] for idx in real_data[10]]))
-
-g_emb_dim = 32
 g_hidden_dim = 128
 g_num_layers = 2
 

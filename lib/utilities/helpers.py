@@ -1,5 +1,5 @@
 import numpy as np
-
+import json
 from torch.autograd import Variable
 
 
@@ -23,13 +23,11 @@ def read_file(data_file, seq_len):
 
 
 def create_vocab_dict(vocab_file):
-    with open(vocab_file, 'r', encoding="utf-8") as f:
-        lines = f.readlines()
-    dic = {}
-    for i, line in enumerate(lines):
-        dic[i] = line.strip()
-    return dic
 
+    with open(vocab_file, 'r') as f:
+        idx_to_char = json.load(f)
+
+    return idx_to_char
 
 def generate_samples(model, batch_size, generated_num, seq_len):
     samples = []
