@@ -24,7 +24,7 @@ from settings import parse_arguments
 
 g_sequence_len = 30
 SAVE_PATH = 'generator_char.pt'
-SAVE_EVERY = 100
+SAVE_EVERY = 2
 
 opt = parse_arguments()
 print_flags(opt)
@@ -57,7 +57,7 @@ print(len(real_data))
 print(''.join([idx_to_char[str(idx)] for idx in real_data[10]]))
 
 g_emb_dim = 32
-g_hidden_dim = 32
+g_hidden_dim = 128
 g_num_layers = 2
 
 # Define Networks
