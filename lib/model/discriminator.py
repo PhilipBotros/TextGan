@@ -17,19 +17,22 @@ class Discriminator(nn.Module):
     architecture: Embedding >> LSTM >> Linear >> Softmax
     """
 
-    def __init__(self, num_classes, vocab_size, emb_dim, hidden_dim, use_cuda, num_layers):
+    def __init__(self, num_classes, vocab_size, hidden_dim, use_cuda, num_layers):
         super(Discriminator, self).__init__()
 
         # Settings
         self.hidden_dim = hidden_dim
-        self.embedding_dim = emb_dim
         self.num_classes = num_classes
         self.use_cuda = use_cuda
         self.num_layers = num_layers
 
+        # One hot encodings
+        self.embedding = nn.Embedding(vocab_size, vocab_size)
+        self.embedding.weight.data = torch.eye(vocab_size)
+        self.embedding.weight.requires_grad = False
+
         # Layers
-        self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
-        self.lstm = nn.LSTM(self.embedding_dim, self.hidden_dim,
+        self.lstm = nn.LSTM(vocab_size, self.hidden_dim,
                             batch_first=True, num_layers=num_layers)
         self.linear = nn.Linear(self.hidden_dim, num_classes)
         self.softmax = nn.LogSoftmax(dim=-1)

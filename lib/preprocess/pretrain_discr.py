@@ -21,7 +21,7 @@ from data_iter import GenDataIter, DisDataIter
 from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags
 from settings import parse_arguments
 
-SAVE_EVERY = 100
+SAVE_EVERY = 1
 
 opt = parse_arguments()
 print_flags(opt)
@@ -33,42 +33,44 @@ VOCAB_SIZE = 100
 NR_EPOCHS = 100000
 
 g_emb_dim = 32
-g_hidden_dim = 32
+g_hidden_dim = 128
 g_sequence_len = 30
 g_num_layers = 2
 
 # Discriminator Parameters
 d_emb_dim = 64
-d_hidden_dim = 32
+d_hidden_dim = 128
 d_num_class = 2
 
 if opt.cuda is not None and opt.cuda >= 0:
     torch.cuda.set_device(opt.cuda)
     opt.cuda = True
 
-if opt.das:
-    POSITIVE_FILE = '/home/pbotros/TextGan/data/real_char.data'
-    idx_to_word = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary_char.txt")
-else:
-    POSITIVE_FILE = '../../data/real_char.data'
-    idx_to_word = create_vocab_dict("../../data/vocabulary_char.txt")
+POSITIVE_FILE = os.path.join(os.getcwd(), '../../data/real_char.data')
+idx_to_char = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
 
 GEN_PATH = 'generator_char.pt'
 SAVE_PATH = 'discriminator_char.pt'
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
 
-generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, g_num_layers, opt.cuda)
+generator = Generator(VOCAB_SIZE, g_hidden_dim, g_num_layers, opt.cuda)
 discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim,
-                              d_hidden_dim, opt.cuda)
+                              d_hidden_dim, opt.cuda, g_num_layers)
 if os.path.isfile(GEN_PATH):
     generator.load_state_dict(torch.load(GEN_PATH))
 
+if os.path.isfile(SAVE_PATH):
+    discriminator.load_state_dict(torch.load(SAVE_PATH))
+
 # Pretrain Discriminator
 dis_criterion = nn.NLLLoss(size_average=False)
-dis_optimizer = optim.Adam(discriminator.parameters())
+parameters = filter(lambda p: p.requires_grad, discriminator.parameters())
+dis_optimizer = optim.Adam(parameters)
 
 if opt.cuda:
     dis_criterion = dis_criterion.cuda()
+    generator = generator.cuda()
+    discriminator = discriminator.cuda()
 
 print('Pretrain Discriminator...')
 
