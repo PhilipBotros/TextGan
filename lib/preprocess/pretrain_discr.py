@@ -54,7 +54,7 @@ SAVE_PATH = 'discriminator_char.pt'
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
 
 generator = Generator(VOCAB_SIZE, g_hidden_dim, g_num_layers, opt.cuda)
-discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim,
+discriminator = Discriminator(d_num_class, VOCAB_SIZE,
                               d_hidden_dim, opt.cuda, g_num_layers)
 if os.path.isfile(GEN_PATH):
     generator.load_state_dict(torch.load(GEN_PATH))
