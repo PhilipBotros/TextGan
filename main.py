@@ -56,8 +56,8 @@ def main():
     if opt.positive_file is None:
         # Use default data paths if none are specified
         if opt.das:
-            opt.positive_file = '/var/scratch/pbotros/data/real_char.data'
-            opt.vocab_file = '/var/scratch/pbotros/data/vocabulary_char.txt'
+            opt.positive_file = os.join(os.getcwd(), 'data/real_char.data')
+            opt.vocab_file = os.join(os.getcwd(), 'data/vocabulary_char.txt')
         else:
             opt.positive_file = './data/real_char.data'
             opt.vocab_file = './data/vocabulary_char.txt'
@@ -71,7 +71,7 @@ def main():
     real_data = read_file(opt.positive_file, opt.seq_len)
 
     # Define Networks
-    generator = Generator(opt.vocab_size, opt.gen_emb_dim, opt.gen_hid_dim, opt.cuda)
+    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.cuda)
     discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_emb_dim,
                                   opt.dis_hid_dim, opt.cuda)
     if opt.cuda:

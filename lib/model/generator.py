@@ -14,15 +14,19 @@ from torch.autograd import Variable
 class Generator(nn.Module):
     """Generator """
 
-    def __init__(self, num_emb, emb_dim, hidden_dim, use_cuda):
+    def __init__(self, vocab_size, hidden_dim, use_cuda):
         super(Generator, self).__init__()
-        self.num_emb = num_emb
         self.emb_dim = emb_dim
         self.hidden_dim = hidden_dim
         self.use_cuda = use_cuda
-        self.emb = nn.Embedding(num_emb, emb_dim)
-        self.lstm = nn.LSTM(emb_dim, hidden_dim, batch_first=True)
-        self.lin = nn.Linear(hidden_dim, num_emb)
+
+        # One hot encodings
+        self.emb = nn.Embedding(vocab_size, vocab_size)
+        self.emb.weight.data = torch.eye(vocab_size)
+        self.emb.weight.requires_grad = False
+
+        self.lstm = nn.LSTM(vocab_size, hidden_dim, batch_first=True)
+        self.lin = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
         self.init_params()
 
