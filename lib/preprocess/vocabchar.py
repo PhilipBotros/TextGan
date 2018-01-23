@@ -25,7 +25,7 @@ class Vocabulary(object):
 
         # Convert to id directly for easier debugging wrt original implementation
         self.char_to_idx = {char: i for i, char in enumerate(self.chars)}
-        index_start_token = len(self.char_to_idx) + 1
+        index_start_token = len(self.char_to_idx)
         self.char_to_idx[self.start_token] = index_start_token
         self.idx_to_char = {i: char for i, char in enumerate(self.chars)}
         self.idx_to_char[index_start_token] = self.start_token
