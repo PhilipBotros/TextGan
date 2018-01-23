@@ -48,6 +48,8 @@ def parse_arguments():
                         help="Save every X number of epochs.")
 
     # Model settings
+    parser.add_argument('--cond', default=False, type=bool,
+                        help="Whether to train a conditional TextGan")
     parser.add_argument('--gen_emb_dim', default=32, type=int,
                         help="Embedding size of the Generator.")
     parser.add_argument('--gen_hid_dim', default=32, type=int,

@@ -51,8 +51,11 @@ class Generator(nn.Module):
         pred = F.softmax(self.lin(output.view(-1, self.hidden_dim)), dim=-1)
         return pred, h, c
 
-    def init_hidden(self, batch_size):
-        h = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
+    def init_hidden(self, batch_size, cond=None):
+        if cond is None:
+            h = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
+        else:
+            h = Variable(cond)
         c = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
         if self.use_cuda:
             h, c = h.cuda(), c.cuda()

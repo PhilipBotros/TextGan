@@ -56,16 +56,25 @@ class Discriminator(nn.Module):
 
         return pred
 
-    def init_hidden(self, batch_size):
+    def init_hidden(self, batch_size, cond=None):
         """
         Hidden state zero initialization for a single layer LSTM.
         """
-        if self.use_cuda:
-            self.hidden = (Variable(torch.zeros(1, batch_size, self.hidden_dim)).cuda(),
-                           Variable(torch.zeros(1, batch_size, self.hidden_dim)).cuda())
-        else:
-            self.hidden = (Variable(torch.zeros(1, batch_size, self.hidden_dim)),
-                           Variable(torch.zeros(1, batch_size, self.hidden_dim)))
+        if cond is None:
+            if self.use_cuda:
+                self.hidden = (Variable(torch.zeros(1, batch_size, self.hidden_dim)).cuda(),
+                               Variable(torch.zeros(1, batch_size, self.hidden_dim)).cuda())
+            else:
+                self.hidden = (Variable(torch.zeros(1, batch_size, self.hidden_dim)),
+                               Variable(torch.zeros(1, batch_size, self.hidden_dim)))
+       else:
+           if self.use_cuda:
+               self.hidden = (Variable(cond).cuda(),
+                              Variable(torch.zeros(1, batch_size, self.hidden_dim)).cuda())
+           else:
+               self.hidden = (Variable(cond),
+                              Variable(torch.zeros(1, batch_size, self.hidden_dim)))
+
 
     def init_params(self):
         for param in self.parameters():

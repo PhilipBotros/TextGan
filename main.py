@@ -53,14 +53,17 @@ def main():
         torch.cuda.set_device(opt.cuda)
         opt.cuda = True
 
+    if opt.remote:
+        datapath = os.join(os.environ("HOME"), "TextGan/data")
+    else:
+        datapath = './data'
+
     if opt.positive_file is None:
         # Use default data paths if none are specified
-        if opt.remote:
-            opt.positive_file = '/home/sdemo069/TextGan/data/real.data'
-            opt.vocab_file = '/home/sdemo069/TextGan/data/vocabulary.txt'
-        else:
-            opt.positive_file = './data/real.data'
-            opt.vocab_file = './data/vocabulary.txt'
+        opt.positive_file = os.join(datapath, "real.data")
+        opt.vocab_file = os.join(datapath, "vocabulary.txt")
+        if opt.cond:
+            cond_file = os.join(datapath, "real.cond")
 
     # Seed for the random number generators
     random.seed(opt.seed)

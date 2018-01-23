@@ -11,6 +11,7 @@ class Vocabulary(object):
         self.file = filename
         self.words = set()
         self.sentences = list()
+        self.condition = list()
         self.cntr = Counter()
         self.create_vocab(nr_words)
 
@@ -20,8 +21,14 @@ class Vocabulary(object):
 
             for article in reader(f):
                 title = tokenize(article['title'])
-                self.cntr.update(title)
-                self.sentences.append(title)
+                if "obama" in title:
+                    self.cntr.update(title)
+                    self.sentences.append(title)
+                    self.condition.append(["obama"])
+                elif "trump" in title:
+                    self.cntr.update(title)
+                    self.sentences.append(title)
+                    self.condition.append(["trump"])
 
         print("Obama: {}".format(self.cntr["obama"]))
         print("Trump: {}".format(self.cntr["trump"]))
@@ -35,6 +42,8 @@ class Vocabulary(object):
         self.idx_to_word = {i: word for i, word in enumerate(self.words)}
         self.sentences = [''.join(convert_sentence(sentence, self.word_to_idx))
                           for sentence in self.sentences]
+        self.condition = [''.join(convert_sentence(condition, self.word_to_idx))
+                          for condition in self.condition]
 
     def save_vocab(self, out_path):
 
@@ -43,6 +52,9 @@ class Vocabulary(object):
 
         # Save in id format direct;y for easier debugging wrt original implementation
         open(out_path + 'real.data', 'w').writelines('\n'.join(self.sentences))
+
+        # Save condition token
+        open(out_path + 'real.cond', 'w').writelines('\n'.join(self.condition))
 
 #---------------------------------------------------------------------------------------------------
 # tokenizer
