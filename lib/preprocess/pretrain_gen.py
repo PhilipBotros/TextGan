@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
+import json
 
 import sys
 sys.path.append('../model')
@@ -21,8 +22,8 @@ from data_iter import GenDataIter, DisDataIter
 from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags
 from settings import parse_arguments
 
-g_sequence_len = 5
-SAVE_PATH = 'generator.pt'
+g_sequence_len = 30
+SAVE_PATH = 'generator_char.pt'
 SAVE_EVERY = 100
 
 opt = parse_arguments()
@@ -33,20 +34,26 @@ if opt.cuda is not None and opt.cuda >= 0:
     opt.cuda = True
 
 if opt.das:
-    POSITIVE_FILE = '/home/pbotros/TextGan/data/real.data'
-    idx_to_word = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary.txt")
+    POSITIVE_FILE = '/home/pbotros/TextGan/data/real_char.data'
+    idx_to_char = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary_char.txt")
 else:
-    POSITIVE_FILE = '../../data/real.data'
-    idx_to_word = create_vocab_dict("../../data/vocabulary.txt")
+    POSITIVE_FILE = '../../data/real_char.data'
+    idx_to_char = create_vocab_dict("../../data/vocabulary_char.txt")
+
+
+with open('../../idx_to_char.json', 'r') as f:
+    idx_to_char = json.load(f)
 
 SEED = 88
 BATCH_SIZE = 64
 TOTAL_BATCH = 1000
 GENERATED_NUM = 100000
-VOCAB_SIZE = 5003
+VOCAB_SIZE = 99
 NR_EPOCHS = 100000
 
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
+
+print(''.join([idx_to_char[str(idx)] for idx in real_data[10]]))
 
 g_emb_dim = 32
 g_hidden_dim = 32
@@ -77,7 +84,8 @@ for i in range(NR_EPOCHS):
 
     # Print some samples
     for j in range(10):
-        print(' '.join([idx_to_word[idx] for idx in samples.data[j]]))
+        print(''.join([idx_to_char[str(idx)] for idx in samples.data[j]]))
+
 
     if i % SAVE_EVERY == 0:
         torch.save(generator.state_dict(), SAVE_PATH)

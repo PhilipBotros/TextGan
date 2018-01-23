@@ -29,12 +29,12 @@ print_flags(opt)
 BATCH_SIZE = 64
 TOTAL_BATCH = 1000
 GENERATED_NUM = 10000
-VOCAB_SIZE = 5003
+VOCAB_SIZE = 99
 NR_EPOCHS = 100000
 
 g_emb_dim = 32
 g_hidden_dim = 32
-g_sequence_len = 5
+g_sequence_len = 30
 
 # Discriminator Parameters
 d_emb_dim = 64
@@ -46,14 +46,14 @@ if opt.cuda is not None and opt.cuda >= 0:
     opt.cuda = True
 
 if opt.das:
-    POSITIVE_FILE = '/home/pbotros/TextGan/data/real.data'
-    idx_to_word = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary.txt")
+    POSITIVE_FILE = '/home/pbotros/TextGan/data/real_char.data'
+    idx_to_word = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary_char.txt")
 else:
-    POSITIVE_FILE = '../../data/real.data'
-    idx_to_word = create_vocab_dict("../../data/vocabulary.txt")
+    POSITIVE_FILE = '../../data/real_char.data'
+    idx_to_word = create_vocab_dict("../../data/vocabulary_char.txt")
 
-GEN_PATH = 'generator.pt'
-SAVE_PATH = 'discriminator.pt'
+GEN_PATH = 'generator_char.pt'
+SAVE_PATH = 'discriminator_char.pt'
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
 
 generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)

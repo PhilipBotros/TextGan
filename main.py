@@ -56,11 +56,11 @@ def main():
     if opt.positive_file is None:
         # Use default data paths if none are specified
         if opt.das:
-            opt.positive_file = '/var/scratch/pbotros/data/real.data'
-            opt.vocab_file = '/var/scratch/pbotros/data/vocabulary.txt'
+            opt.positive_file = '/var/scratch/pbotros/data/real_char.data'
+            opt.vocab_file = '/var/scratch/pbotros/data/vocabulary_char.txt'
         else:
-            opt.positive_file = './data/real.data'
-            opt.vocab_file = './data/vocabulary.txt'
+            opt.positive_file = './data/real_char.data'
+            opt.vocab_file = './data/vocabulary_char.txt'
 
     # Seed for the random number generators
     random.seed(opt.seed)

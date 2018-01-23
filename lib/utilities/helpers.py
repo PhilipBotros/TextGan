@@ -23,7 +23,7 @@ def read_file(data_file, seq_len):
 
 
 def create_vocab_dict(vocab_file):
-    with open(vocab_file, 'r') as f:
+    with open(vocab_file, 'r', encoding="utf-8") as f:
         lines = f.readlines()
     dic = {}
     for i, line in enumerate(lines):
@@ -91,9 +91,9 @@ def print_flags(opt):
     for key, value in vars(opt).items():
         print(key + ' : ' + str(value))
 
-def print_samples(num, idx_to_word, samples):
+def print_samples(num, idx_to_char, samples):
     """
     Print given number of samples.
     """
     for i in range(num):
-        print(' '.join([idx_to_word[idx] for idx in samples.data[i]]))
+        print(''.join([idx_to_char[idx] for idx in samples.data[i]]))
