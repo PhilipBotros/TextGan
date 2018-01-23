@@ -34,8 +34,8 @@ if opt.cuda is not None and opt.cuda >= 0:
     opt.cuda = True
 
 if opt.das:
-    POSITIVE_FILE = '/home/pbotros/TextGan/data/real_char.data'
-    idx_to_char = create_vocab_dict("/home/pbotros/TextGan/data/vocabulary_char.txt")
+    POSITIVE_FILE = os.join(os.get_cwd(), '../../data/real_char.data')
+    idx_to_char = create_vocab_dict(os.join(os.get_cwd(), '../../data/vocabulary_char.txt'))
 else:
     POSITIVE_FILE = '../../data/real_char.data'
     idx_to_char = create_vocab_dict("../../data/vocabulary_char.txt")
