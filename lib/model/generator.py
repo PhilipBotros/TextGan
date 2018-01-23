@@ -14,14 +14,15 @@ from torch.autograd import Variable
 class Generator(nn.Module):
     """Generator """
 
-    def __init__(self, num_emb, emb_dim, hidden_dim, use_cuda):
+    def __init__(self, num_emb, emb_dim, hidden_dim, num_layers, use_cuda):
         super(Generator, self).__init__()
         self.num_emb = num_emb
         self.emb_dim = emb_dim
         self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
         self.use_cuda = use_cuda
         self.emb = nn.Embedding(num_emb, emb_dim)
-        self.lstm = nn.LSTM(emb_dim, hidden_dim, batch_first=True)
+        self.lstm = nn.LSTM(emb_dim, hidden_dim, num_layers = self.num_layers, batch_first=True)
         self.lin = nn.Linear(hidden_dim, num_emb)
         self.softmax = nn.LogSoftmax(dim=-1)
         self.init_params()
@@ -52,8 +53,8 @@ class Generator(nn.Module):
         return pred, h, c
 
     def init_hidden(self, batch_size):
-        h = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
-        c = Variable(torch.zeros((1, batch_size, self.hidden_dim)))
+        h = Variable(torch.zeros((self.num_layers, batch_size, self.hidden_dim)))
+        c = Variable(torch.zeros((self.num_layers, batch_size, self.hidden_dim)))
         if self.use_cuda:
             h, c = h.cuda(), c.cuda()
         return h, c

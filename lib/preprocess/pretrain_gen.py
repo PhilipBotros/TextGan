@@ -57,9 +57,10 @@ print(''.join([idx_to_char[str(idx)] for idx in real_data[10]]))
 
 g_emb_dim = 32
 g_hidden_dim = 32
+g_num_layers = 2
 
 # Define Networks
-generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
+generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, g_num_layers, opt.cuda)
 
 if os.path.isfile(SAVE_PATH):
     generator.load_state_dict(torch.load(SAVE_PATH))

@@ -35,6 +35,7 @@ NR_EPOCHS = 100000
 g_emb_dim = 32
 g_hidden_dim = 32
 g_sequence_len = 30
+g_num_layers = 2
 
 # Discriminator Parameters
 d_emb_dim = 64
@@ -56,7 +57,7 @@ GEN_PATH = 'generator_char.pt'
 SAVE_PATH = 'discriminator_char.pt'
 real_data = read_file(POSITIVE_FILE, g_sequence_len)
 
-generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, opt.cuda)
+generator = Generator(VOCAB_SIZE, g_emb_dim, g_hidden_dim, g_num_layers, opt.cuda)
 discriminator = Discriminator(d_num_class, VOCAB_SIZE, d_emb_dim,
                               d_hidden_dim, opt.cuda)
 if os.path.isfile(GEN_PATH):
