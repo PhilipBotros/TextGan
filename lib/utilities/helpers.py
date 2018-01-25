@@ -29,6 +29,7 @@ def create_vocab_dict(vocab_file):
 
     return idx_to_char
 
+
 def generate_samples(model, batch_size, generated_num, seq_len):
     samples = []
     for _ in range(int(generated_num / batch_size)):
@@ -95,4 +96,4 @@ def print_samples(num, idx_to_char, samples):
     Print given number of samples.
     """
     for i in range(num):
-        print(''.join([idx_to_char[idx] for idx in samples.data[i]]))
+        print(''.join([idx_to_char[str(idx)] for idx in samples.data[i]]))

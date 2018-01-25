@@ -55,15 +55,15 @@ def main():
 
     if opt.positive_file is None:
         # Use default data paths if none are specified
-        opt.positive_file = os.join(os.getcwd(), 'data/real_char.data')
-        opt.vocab_file = os.join(os.getcwd(), 'data/vocabulary_char.txt')
+        opt.positive_file = os.path.join(os.getcwd(), 'data/real_char.data')
+        idx_to_char = os.path.join(os.getcwd(), 'data/idx_to_char.json')
 
     # Seed for the random number generators
     random.seed(opt.seed)
     np.random.seed(opt.seed)
 
     # Data and vocabulary
-    idx_to_word = create_vocab_dict(opt.vocab_file)
+    idx_to_char = create_vocab_dict(idx_to_char)
     real_data = read_file(opt.positive_file, opt.seq_len)
 
     # Define Networks
@@ -93,9 +93,11 @@ def main():
 
     # Loss and optimizer for the Generator and Discriminator
     gen_loss = GANLoss()
-    gen_optimizer = optim.Adam(generator.parameters())
+    gen_parameters = filter(lambda p: p.requires_grad, generator.parameters())
+    gen_optimizer = optim.Adam(gen_parameters)
     dis_loss = nn.NLLLoss(size_average=False)
-    dis_optimizer = optim.Adam(discriminator.parameters())
+    dis_parameters = filter(lambda p: p.requires_grad, discriminator.parameters())
+    dis_optimizer = optim.Adam(dis_parameters)
 
     # Rollout policy; Monte Carlo search or rewards from LSTM
     rollout = Rollout(generator, 0.8)
@@ -111,7 +113,7 @@ def main():
         for it in range(1):
             # Generate some samples for printing
             samples = generator.sample(opt.batch_size, opt.seq_len)
-            print_samples(10, idx_to_word, samples)
+            print_samples(10, idx_to_char, samples)
 
             # Construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((opt.batch_size, 1)).type(torch.LongTensor)
