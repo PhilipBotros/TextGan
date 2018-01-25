@@ -75,9 +75,9 @@ def main():
 
     # Default model paths
     if opt.gen_path is None:
-        opt.gen_path = 'generator.pt'
+        opt.gen_path = 'generator_char.pt'
     if opt.dis_path is None:
-        opt.dis_path = 'discriminator.pt'
+        opt.dis_path = 'discriminator_char.pt'
 
     # Load pretrained Generator and Discriminator when provided
     if os.path.isfile(opt.gen_path):

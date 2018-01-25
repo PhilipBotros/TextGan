@@ -14,11 +14,12 @@ from torch.autograd import Variable
 class Generator(nn.Module):
     """Generator """
 
-    def __init__(self, vocab_size, hidden_dim, num_layers, use_cuda):
+    def __init__(self, vocab_size, hidden_dim, num_layers, use_cuda, start_token=98):
         super(Generator, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.use_cuda = use_cuda
+        self.start_token = start_token
 
         # One hot encodings
         self.emb = nn.Embedding(vocab_size, vocab_size)
@@ -72,7 +73,7 @@ class Generator(nn.Module):
         if x is None:
             flag = True
         if flag:
-            x = Variable(torch.zeros((batch_size, 1)).long())
+            x = Variable(self.start_token * torch.ones((batch_size, 1)).long())
         if self.use_cuda:
             x = x.cuda()
         h, c = self.init_hidden(batch_size)
