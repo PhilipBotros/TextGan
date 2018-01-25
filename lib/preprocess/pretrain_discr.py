@@ -33,36 +33,34 @@ if opt.cuda is not None and opt.cuda >= 0:
 
 # Default data paths
 if opt.positive_file is None:
-    if opt.remote:
-        opt.positive_file = '$HOME/TextGan/data/real.data'
-        idx_to_word = create_vocab_dict("$HOME/TextGan/data/vocabulary.txt")
-    else:
-        opt.positive_file = '../../data/real.data'
-        idx_to_word = create_vocab_dict("../../data/vocabulary.txt")
+    opt.positive_file = os.path.join(os.getcwd(), '../../data/real_char.data')
+    idx_to_char = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
 
 # Default model paths
 if opt.gen_path is None:
-    opt.gen_path = 'generator.pt'
+    opt.gen_path = 'generator_char.pt'
 if opt.dis_path is None:
-    opt.dis_path = 'discriminator.pt'
+    opt.dis_path = 'discriminator_char.pt'
 
 real_data = read_file(opt.positive_file, opt.seq_len)
 
-generator = Generator(opt.vocab_size, opt.gen_emb_dim, opt.gen_hid_dim, opt.cuda)
-discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_emb_dim,
-                              opt.dis_hid_dim, opt.cuda)
+generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.num_layers, opt.cuda)
+discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim, opt.num_layers, opt.cuda)
 
 if os.path.isfile(opt.gen_path):
     generator.load_state_dict(torch.load(opt.gen_path))
 if os.path.isfile(opt.dis_path):
-    generator.load_state_dict(torch.load(opt.dis_path))
+    discriminator.load_state_dict(torch.load(opt.dis_path))
 
 # Pretrain Discriminator
 dis_criterion = nn.NLLLoss(size_average=False)
-dis_optimizer = optim.Adam(discriminator.parameters())
+parameters = filter(lambda p: p.requires_grad, discriminator.parameters())
+dis_optimizer = optim.Adam(parameters)
 
 if opt.cuda:
     dis_criterion = dis_criterion.cuda()
+    generator = generator.cuda()
+    discriminator = discriminator.cuda()
 
 print('Pretrain Discriminator...')
 

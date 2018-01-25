@@ -15,7 +15,7 @@ class GenDataIter(object):
         super(GenDataIter, self).__init__()
         self.batch_size = batch_size
         self.data_lis = data_lis
-        self.data_num = len(self.data_lis) 
+        self.data_num = len(self.data_lis)
         self.indices = range(self.data_num)
         self.num_batches = int(math.ceil(float(self.data_num) / self.batch_size))
         self.idx = 0
@@ -41,8 +41,10 @@ class GenDataIter(object):
         d = torch.LongTensor(np.asarray(d, dtype='int64'))
         if d.shape[0] != self.batch_size:
             raise StopIteration
-        data = torch.cat([torch.zeros(self.batch_size, 1).long(), d], dim=1)
-        target = torch.cat([d, torch.zeros(self.batch_size, 1).long()], dim=1)
+        # data = torch.cat([torch.zeros(self.batch_size, 1).long(), d], dim=1)
+        # target = torch.cat([d, torch.zeros(self.batch_size, 1).long()], dim=1)
+        data = d[:, 0:-1]
+        target = d[:, 1:]
         self.idx += self.batch_size
         return data, target
 
@@ -53,7 +55,7 @@ class DisDataIter(object):
     def __init__(self, real_data_lis, fake_data_lis, batch_size, full):
         super(DisDataIter, self).__init__()
         self.batch_size = batch_size
-        self.data = list(real_data_lis) + fake_data_lis
+        self.data = list(np.asarray(real_data_lis)[:, 1:]) + fake_data_lis
 
         if full:
             # Target for every word in the sequence

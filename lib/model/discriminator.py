@@ -17,18 +17,23 @@ class Discriminator(nn.Module):
     architecture: Embedding >> LSTM >> Linear >> Softmax
     """
 
-    def __init__(self, num_classes, vocab_size, emb_dim, hidden_dim, use_cuda):
+    def __init__(self, num_classes, vocab_size, hidden_dim, num_layers, use_cuda):
         super(Discriminator, self).__init__()
 
         # Settings
         self.hidden_dim = hidden_dim
-        self.embedding_dim = emb_dim
         self.num_classes = num_classes
         self.use_cuda = use_cuda
+        self.num_layers = num_layers
+
+        # One hot encodings
+        self.embedding = nn.Embedding(vocab_size, vocab_size)
+        self.embedding.weight.data = torch.eye(vocab_size)
+        self.embedding.weight.requires_grad = False
 
         # Layers
-        self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
-        self.lstm = nn.LSTM(emb_dim, self.hidden_dim, batch_first=True)
+        self.lstm = nn.LSTM(vocab_size, self.hidden_dim,
+                            batch_first=True, num_layers=num_layers)
         self.linear = nn.Linear(self.hidden_dim, num_classes)
         self.softmax = nn.LogSoftmax(dim=-1)
 
@@ -61,11 +66,11 @@ class Discriminator(nn.Module):
         Hidden state zero initialization for a single layer LSTM.
         """
         if self.use_cuda:
-            self.hidden = (Variable(torch.zeros(1, batch_size, self.hidden_dim)).cuda(),
-                           Variable(torch.zeros(1, batch_size, self.hidden_dim)).cuda())
+            self.hidden = (Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim)).cuda(),
+                           Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim)).cuda())
         else:
-            self.hidden = (Variable(torch.zeros(1, batch_size, self.hidden_dim)),
-                           Variable(torch.zeros(1, batch_size, self.hidden_dim)))
+            self.hidden = (Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim)),
+                           Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim)))
 
     def init_params(self):
         for param in self.parameters():

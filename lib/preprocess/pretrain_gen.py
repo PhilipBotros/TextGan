@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
+import json
 
 import sys
 sys.path.append('../model')
@@ -33,18 +34,18 @@ if opt.cuda is not None and opt.cuda >= 0:
 
 # Default data paths
 if opt.positive_file is None:
-    if opt.remote:
-        opt.positive_file = '$HOME/TextGan/data/real.data'
-        idx_to_word = create_vocab_dict("$HOME/TextGan/data/vocabulary.txt")
-    else:
-        opt.positive_file = '../../data/real.data'
-        idx_to_word = create_vocab_dict("../../data/vocabulary.txt")
+    opt.positive_file = os.path.join(os.getcwd(), '../../data/real_char.data')
+    idx_to_char = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
+
+# Default model paths
+if opt.gen_path is None:
+    opt.gen_path = 'generator_char.pt'
 
 # Load real data
 real_data = read_file(opt.positive_file, opt.seq_len)
 
 # Define Networks
-generator = Generator(opt.vocab_size, opt.gen_emb_dim, opt.gen_hid_dim, opt.cuda)
+generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.num_layers, opt.cuda)
 
 if os.path.isfile(opt.gen_path):
     generator.load_state_dict(torch.load(opt.gen_path))
@@ -54,7 +55,8 @@ if opt.cuda:
 
 # Pretrain Generator using MLE
 gen_criterion = nn.NLLLoss(size_average=False)
-gen_optimizer = optim.Adam(generator.parameters())
+parameters = filter(lambda p: p.requires_grad, generator.parameters())
+gen_optimizer = optim.Adam(parameters)
 if opt.cuda:
     gen_criterion = gen_criterion.cuda()
 
@@ -69,7 +71,7 @@ for i in range(opt.num_epochs):
 
     # Print some samples
     for j in range(10):
-        print(' '.join([idx_to_word[idx] for idx in samples.data[j]]))
+        print(''.join([idx_to_char[str(idx)] for idx in samples.data[j]]))
 
     if i % opt.save_every == 0:
         torch.save(generator.state_dict(), opt.gen_path)

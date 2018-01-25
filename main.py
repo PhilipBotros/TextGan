@@ -55,12 +55,8 @@ def main():
 
     if opt.positive_file is None:
         # Use default data paths if none are specified
-        if opt.remote:
-            opt.positive_file = '/home/sdemo069/TextGan/data/real.data'
-            opt.vocab_file = '/home/sdemo069/TextGan/data/vocabulary.txt'
-        else:
-            opt.positive_file = './data/real.data'
-            opt.vocab_file = './data/vocabulary.txt'
+        opt.positive_file = os.join(os.getcwd(), 'data/real_char.data')
+        opt.vocab_file = os.join(os.getcwd(), 'data/vocabulary_char.txt')
 
     # Seed for the random number generators
     random.seed(opt.seed)
@@ -71,9 +67,8 @@ def main():
     real_data = read_file(opt.positive_file, opt.seq_len)
 
     # Define Networks
-    generator = Generator(opt.vocab_size, opt.gen_emb_dim, opt.gen_hid_dim, opt.cuda)
-    discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_emb_dim,
-                                  opt.dis_hid_dim, opt.cuda)
+    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.num_layers, opt.cuda)
+    discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim, opt.num_layers, opt.cuda)
     if opt.cuda:
         generator = generator.cuda()
         discriminator = discriminator.cuda()
