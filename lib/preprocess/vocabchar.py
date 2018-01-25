@@ -23,15 +23,27 @@ class Vocabulary(object):
                 self.sentences.append(title)
                 self.chars.update(title)
 
-        # Convert to id directly for easier debugging wrt original implementation
-        self.char_to_idx = {char: i for i, char in enumerate(self.chars)}
-        index_start_token = len(self.char_to_idx)
+        # Start with SOS token for char to index mapping
+        index_start_token = 0
+        
+
+        # Add rest of the characters
+        self.char_to_idx = {char: i + 1 for i, char in enumerate(self.chars)}
         self.char_to_idx[self.start_token] = index_start_token
-        self.idx_to_char = {i: char for i, char in enumerate(self.chars)}
+        
+        # Create mapping from index to char
+        self.idx_to_char = {i + 1: char for i, char in enumerate(self.chars)}
         self.idx_to_char[index_start_token] = self.start_token
 
-        self.sentences = [''.join(convert_sentence(sentence, self.char_to_idx))
+        self.sentences = [''.join(self.convert_sentence(sentence, self.char_to_idx))
                           for sentence in self.sentences]
+
+    def convert_sentence(self, sentence, char_to_idx):
+
+        sentence = str(char_to_idx[self.start_token]) + ' ' + \
+            ' '.join(str(char_to_idx[char]) for char in sentence)
+
+        return sentence
 
     def save_vocab(self, out_path):
 
@@ -41,12 +53,5 @@ class Vocabulary(object):
         # Save in id format direct;y for easier debugging wrt original implementation
         open(out_path + 'real_char.data', 'w').writelines('\n'.join(self.sentences))
 
-#---------------------------------------------------------------------------------------------------
 
 
-def convert_sentence(sentence, char_to_idx):
-
-    sentence = str(char_to_idx['<SOS>']) + ' ' + \
-        ' '.join(str(char_to_idx[char]) for char in sentence)
-
-    return sentence

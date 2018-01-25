@@ -105,3 +105,4 @@ out/
 
 #aux code
 test.py
+*.json
