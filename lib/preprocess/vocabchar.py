@@ -26,7 +26,6 @@ class Vocabulary(object):
         # Start with SOS token for char to index mapping
         index_start_token = 0
         
-
         # Add rest of the characters
         self.char_to_idx = {char: i + 1 for i, char in enumerate(self.chars)}
         self.char_to_idx[self.start_token] = index_start_token
@@ -47,7 +46,7 @@ class Vocabulary(object):
 
     def save_vocab(self, out_path):
 
-        with open('idx_to_char.json', 'w') as f:
+        with open(out_path + 'idx_to_char.json', 'w') as f:
             json.dump(self.idx_to_char, f)
 
         # Save in id format direct;y for easier debugging wrt original implementation

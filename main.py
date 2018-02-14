@@ -55,17 +55,17 @@ def main():
 
     if opt.positive_file is None:
         # Use default data paths if none are specified
-        opt.positive_file = os.path.join(os.getcwd(), 'data/real_char.data')
-        idx_to_char = os.path.join(os.getcwd(), 'data/idx_to_char.json')
+        opt.positive_file = os.path.join(os.getcwd(), 'data/real.data')
+        idx_to_word = os.path.join(os.getcwd(), 'data/idx_to_word.json')
 
     # Seed for the random number generators
     random.seed(opt.seed)
     np.random.seed(opt.seed)
 
     # Data and vocabulary
-    idx_to_char = create_vocab_dict(idx_to_char)
+    idx_to_word = create_vocab_dict(idx_to_word)
     real_data = read_file(opt.positive_file, opt.seq_len)
-
+    
     # Define Networks
     generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.num_layers, opt.cuda)
     discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim, opt.num_layers, opt.cuda)
@@ -113,7 +113,7 @@ def main():
         for it in range(1):
             # Generate some samples for printing
             samples = generator.sample(opt.batch_size, opt.seq_len)
-            print_samples(10, idx_to_char, samples)
+            print_samples(10, idx_to_word, samples)
 
             # Construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((opt.batch_size, 1)).type(torch.LongTensor)
