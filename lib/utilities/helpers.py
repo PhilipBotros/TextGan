@@ -6,10 +6,11 @@ from torch.autograd import Variable
 def read_file(data_file, seq_len):
     with open(data_file, 'r') as f:
         lines = f.readlines()
+        print(lines[0])
     lis = []
     for line in lines:
         l = line.strip().split(' ')
-
+        # print(l)
         # Only load sequences of the set length
         if len(l) > seq_len:
             try:
@@ -91,9 +92,9 @@ def print_flags(opt):
         print(key + ' : ' + str(value))
 
 
-def print_samples(num, idx_to_char, samples):
+def print_samples(num, idx_to_word, samples):
     """
     Print given number of samples.
     """
     for i in range(num):
-        print(''.join([idx_to_char[str(idx)] for idx in samples.data[i]]))
+        print(' '.join([idx_to_word[str(idx)] for idx in samples.data[i]]))
