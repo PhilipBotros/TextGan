@@ -14,19 +14,23 @@ from torch.autograd import Variable
 class Generator(nn.Module):
     """Generator """
 
-    def __init__(self, vocab_size, hidden_dim, num_layers, use_cuda, start_token=98):
+    def __init__(self, vocab_size, hidden_dim, embedding_dim, num_layers, use_cuda, mode='word', start_token=0):
         super(Generator, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.use_cuda = use_cuda
         self.start_token = start_token
 
-        # One hot encodings
-        self.emb = nn.Embedding(vocab_size, vocab_size)
-        self.emb.weight.data = torch.eye(vocab_size)
-        self.emb.weight.requires_grad = False
+        # Defnine embeddings
+        self.emb = nn.Embedding(vocab_size, embedding_dim)
 
-        self.lstm = nn.LSTM(vocab_size, hidden_dim, num_layers=self.num_layers, batch_first=True)
+        if mode == "char":
+            if vocab_size == embedding_dim:
+                # One hot encodings
+                self.emb.weight.data = torch.eye(vocab_size)
+                self.emb.weight.requires_grad = False
+
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.lin = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
         self.init_params()

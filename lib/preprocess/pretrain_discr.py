@@ -44,8 +44,13 @@ if opt.dis_path is None:
 
 real_data = read_file(opt.positive_file, opt.seq_len)
 
-generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.num_layers, opt.cuda)
-discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim, opt.num_layers, opt.cuda)
+# One-hot encodings with character LSTM's
+if opt.mode == 'char':
+    opt.emb_dim = opt.vocab_size
+
+generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
+discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim,
+                              opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
 
 if os.path.isfile(opt.gen_path):
     generator.load_state_dict(torch.load(opt.gen_path))
