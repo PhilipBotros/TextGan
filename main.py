@@ -56,7 +56,17 @@ def main():
     if opt.positive_file is None:
         # Use default data paths if none are specified
         opt.positive_file = os.path.join(os.getcwd(), 'data/real.data')
-        idx_to_word = os.path.join(os.getcwd(), 'data/idx_to_word.json')
+
+    # Load vocabulary
+    if opt.mode == "word":
+        idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), 'data/idx_to_word.json'))
+    else if opt.mode == "char":
+        idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), 'data/idx_to_char.json'))
+    else:
+        raise Exception('Mode not recognized.')
+
+    # Read data file
+    real_data = read_file(opt.positive_file, opt.seq_len)
 
     if opt.mode == 'char':
         # One hot encodings for character LSTMs
@@ -65,10 +75,6 @@ def main():
     # Seed for the random number generators
     random.seed(opt.seed)
     np.random.seed(opt.seed)
-
-    # Data and vocabulary
-    idx_to_word = create_vocab_dict(idx_to_word)
-    real_data = read_file(opt.positive_file, opt.seq_len)
 
     # Define Networks
     generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
@@ -118,7 +124,7 @@ def main():
         for it in range(1):
             # Generate some samples for printing
             samples = generator.sample(opt.batch_size, opt.seq_len)
-            print_samples(10, idx_to_word, samples)
+            print_samples(10, idx_to_word, samples, opt.mode)
 
             # Construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((opt.batch_size, 1)).type(torch.LongTensor)

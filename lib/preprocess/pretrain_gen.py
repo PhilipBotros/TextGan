@@ -35,7 +35,17 @@ if opt.cuda is not None and opt.cuda >= 0:
 # Default data paths
 if opt.positive_file is None:
     opt.positive_file = os.path.join(os.getcwd(), '../../data/real_char.data')
-    idx_to_char = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
+
+# Load vocab dict
+if opt.mode == 'word':
+    idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_word.json'))
+else if opt.mode == 'char':
+    idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
+else:
+    raise Exception('Mode not recognized.')
+
+# Load real data
+real_data = read_file(opt.positive_file, opt.seq_len)
 
 # Default model paths
 if opt.gen_path is None:
@@ -44,9 +54,6 @@ if opt.gen_path is None:
 # One hot encodings for character LSTMs
 if opt.mode == "char":
     opt.emb_dim = opt.vocab_size
-
-# Load real data
-real_data = read_file(opt.positive_file, opt.seq_len)
 
 # Define Networks
 generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
@@ -75,7 +82,7 @@ for i in range(opt.num_epochs):
 
     # Print some samples
     for j in range(10):
-        print(''.join([idx_to_char[str(idx)] for idx in samples.data[j]]))
+        print(''.join([idx_to_word[str(idx)] for idx in samples.data[j]]))
 
     if i % opt.save_every == 0:
         torch.save(generator.state_dict(), opt.gen_path)
