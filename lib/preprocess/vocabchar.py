@@ -4,7 +4,7 @@ from unidecode import unidecode
 import json
 
 
-class Vocabulary(object):
+class VocabChar(object):
 
     def __init__(self, filename):
 
@@ -25,11 +25,11 @@ class Vocabulary(object):
 
         # Start with SOS token for char to index mapping
         index_start_token = 0
-        
+
         # Add rest of the characters
         self.char_to_idx = {char: i + 1 for i, char in enumerate(self.chars)}
         self.char_to_idx[self.start_token] = index_start_token
-        
+
         # Create mapping from index to char
         self.idx_to_char = {i + 1: char for i, char in enumerate(self.chars)}
         self.idx_to_char[index_start_token] = self.start_token
@@ -51,6 +51,3 @@ class Vocabulary(object):
 
         # Save in id format direct;y for easier debugging wrt original implementation
         open(out_path + 'real_char.data', 'w').writelines('\n'.join(self.sentences))
-
-
-

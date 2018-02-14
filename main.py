@@ -58,6 +58,10 @@ def main():
         opt.positive_file = os.path.join(os.getcwd(), 'data/real.data')
         idx_to_word = os.path.join(os.getcwd(), 'data/idx_to_word.json')
 
+    if opt.mode == 'char':
+        # One hot encodings for character LSTMs
+        opt.emb_dim = opt.vocab_size
+
     # Seed for the random number generators
     random.seed(opt.seed)
     np.random.seed(opt.seed)
@@ -65,10 +69,11 @@ def main():
     # Data and vocabulary
     idx_to_word = create_vocab_dict(idx_to_word)
     real_data = read_file(opt.positive_file, opt.seq_len)
-    
+
     # Define Networks
-    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.num_layers, opt.cuda)
-    discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim, opt.num_layers, opt.cuda)
+    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
+    discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim,
+                                  opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
     if opt.cuda:
         generator = generator.cuda()
         discriminator = discriminator.cuda()
