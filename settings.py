@@ -44,7 +44,7 @@ def parse_arguments():
     parser.add_argument('--num_class', default=2, type=int,
                         help="Number of Discriminator output classes.")
     parser.add_argument('--seq_len', default=30, type=int, help="Sequence length.")
-    parser.add_argument('--save_every', default=100, type=int,
+    parser.add_argument('--save_every', default=1, type=int,
                         help="Save every X number of epochs.")
 
     # Model settings
