@@ -34,7 +34,17 @@ if opt.cuda is not None and opt.cuda >= 0:
 # Default data paths
 if opt.positive_file is None:
     opt.positive_file = os.path.join(os.getcwd(), '../../data/real_char.data')
-    idx_to_char = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
+
+# Load vocab dict
+if opt.mode == 'word':
+    idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_word.json'))
+else if opt.mode == 'char':
+    idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), '../../data/idx_to_char.json'))
+else:
+    raise Exception('Mode not recognized.')
+
+# Read data file
+real_data = read_file(opt.positive_file, opt.seq_len)
 
 # Default model paths
 if opt.gen_path is None:
@@ -42,7 +52,6 @@ if opt.gen_path is None:
 if opt.dis_path is None:
     opt.dis_path = 'discriminator_char.pt'
 
-real_data = read_file(opt.positive_file, opt.seq_len)
 
 # One-hot encodings with character LSTM's
 if opt.mode == 'char':
