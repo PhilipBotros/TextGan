@@ -60,7 +60,7 @@ def main():
     # Load vocabulary
     if opt.mode == "word":
         idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), 'data/idx_to_word.json'))
-    else if opt.mode == "char":
+    elif opt.mode == "char":
         idx_to_word = create_vocab_dict(os.path.join(os.getcwd(), 'data/idx_to_char.json'))
     else:
         raise Exception('Mode not recognized.')
