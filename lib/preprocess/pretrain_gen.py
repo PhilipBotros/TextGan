@@ -74,8 +74,8 @@ for i in range(opt.num_epochs):
     samples = generator.sample(opt.batch_size, opt.seq_len)
 
     # Print some samples
-    for j in range(10):
-        print(''.join([idx_to_char[str(idx)] for idx in samples.data[j]]))
+    print_samples(10, idx_to_word, samples, opt.mode)
+
 
     if i % opt.save_every == 0:
         torch.save(generator.state_dict(), opt.gen_path)

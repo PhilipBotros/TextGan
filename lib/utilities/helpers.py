@@ -92,9 +92,13 @@ def print_flags(opt):
         print(key + ' : ' + str(value))
 
 
-def print_samples(num, idx_to_word, samples):
+def print_samples(num, idx_to_key, samples, mode):
     """
     Print given number of samples.
     """
-    for i in range(num):
-        print(' '.join([idx_to_word[str(idx)] for idx in samples.data[i]]))
+    if mode == 'word'
+        for i in range(num):
+            print(' '.join([idx_to_key[str(idx)] for idx in samples.data[i]]))
+    else:
+        for i in range(num):
+            print(''.join([idx_to_word[str(idx)] for idx in samples.data[i]]))
