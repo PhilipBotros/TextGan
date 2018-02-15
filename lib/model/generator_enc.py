@@ -24,7 +24,7 @@ class Generator(nn.Module):
         self.batch_size = batch_size
         self.vocab_size = vocab_size
 
-        # Defnine embeddings
+        # Define embeddings
         self.emb = nn.Embedding(vocab_size, embedding_dim)
 
         if mode == "char":
@@ -33,8 +33,13 @@ class Generator(nn.Module):
                 self.emb.weight.data = torch.eye(vocab_size)
                 self.emb.weight.requires_grad = False
 
-        self.lstm = nn.LSTMCell(embedding_dim, hidden_dim)
-        self.linear = nn.Linear(hidden_dim, vocab_size)
+        # Create encoder
+        self.lstm_enc = nn.LSTMCell(embedding_dim, hidden_dim)
+
+        # Create decoder
+        self.lstm_dec = nn.LSTMCell(hidden_dim, hidden_dim)
+        self.linear_dec = nn.Linear(hidden_dim, vocab_size)
+        
         self.softmax = nn.LogSoftmax(dim=-1)
         self.init_params()
 
@@ -46,18 +51,21 @@ class Generator(nn.Module):
 
         # Embeddings are (batch_size x seq_len x embedding_dim)
         emb = self.emb(x)
-        h_t, c_t = self.init_hidden(self.batch_size)
-        outputs = list()
+        h_t_enc, c_t_enc = self.init_hidden(self.batch_size)
+        h_t_dec, c_t_dec = self.init_hidden(self.batch_size)
+        outputs_dec = list()
         for i in range(self.seq_len):
-            # Put in embeddings per timestep of (batch_size x embedding_dim)
-            h_t, c_t = self.lstm(emb[:,i,:], (h_t, c_t))
-            output = self.softmax(self.linear(h_t))
-            # Output is (batch_size x vocab_size)
-            # Concatenate to final output
-            outputs += [output]
+            # Put in embeddings per timestep of (batch_size x embedding_dim) into the encoder
+            h_t_enc, c_t_enc = self.lstm_enc(emb[:,i,:], (h_t_enc, c_t_enc))
 
-        # Reduce to ((batch_size x seq_len), vocab_size) for fast log likelihood computation
-        outputs = torch.stack(outputs, 1).view(-1, self.vocab_size)
+            # Give output of the encoder as input to the decoder
+            h_t_dec, c_t_dec = self.lstm_dec(h_t_enc, (h_t_dec, c_t_dec))
+            output_dec = self.softmax(self.linear_dec(h_t_dec))
+            # Output is (batch_size x vocab_size)
+            outputs_dec += [output_dec]
+
+        # Reduce to ((batch_size x seq_len), vocab_size) for smooth log likelihood computation
+        outputs = torch.stack(outputs_dec, 1).view(-1, self.vocab_size)
         return outputs
 
     def step(self, x, h, c):
@@ -74,10 +82,12 @@ class Generator(nn.Module):
         return pred, h, c
 
     def init_hidden(self, batch_size):
+
         h = Variable(torch.zeros((batch_size, self.hidden_dim)))
         c = Variable(torch.zeros((batch_size, self.hidden_dim)))
         if self.use_cuda:
             h, c = h.cuda(), c.cuda()
+
         return h, c
 
     def init_params(self):
