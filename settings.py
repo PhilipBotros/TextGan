@@ -39,7 +39,7 @@ def parse_arguments():
                         help="Number of Generator/Discriminator epochs.")
     parser.add_argument('--num_gen', default=10000, type=int,
                         help="How much fake sequences to generate per Discriminator epoch.")
-    parser.add_argument('--vocab_size', default=20000, type=int,
+    parser.add_argument('--vocab_size', default=300, type=int,
                         help="Number of characters.")
     parser.add_argument('--num_class', default=2, type=int,
                         help="Number of Discriminator output classes.")
@@ -50,8 +50,8 @@ def parse_arguments():
     # Model settings
     parser.add_argument('--num_layers', default=2, type=int,
                         help="Number of layers of the models.")
-    parser.add_argument('--emb_dim', default=512, type=int, help="Word Embedding size.")
-    parser.add_argument('--gen_hid_dim', default=128, type=int,
+    parser.add_argument('--emb_dim', default=128, type=int, help="Word Embedding size.")
+    parser.add_argument('--gen_hid_dim', default=256, type=int,
                         help="Hidden layer size of the Generator.")
     parser.add_argument('--dis_hid_dim', default=128, type=int,
                         help="Hidden layer size of the Discriminator.")

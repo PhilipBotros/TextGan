@@ -11,17 +11,30 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 
+
+class FeedForward(nn.Module):
+    def __init__(self, input_size, hidden_size, num_classes):
+        super(FeedForward, self).__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size) 
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_size, num_classes)  
+    
+    def forward(self, x):
+        h1 = self.relu(self.fc1(x))
+        out = self.fc2(h1)
+        return out
+
 class Generator(nn.Module):
     """Generator """
 
-    def __init__(self, vocab_size, hidden_dim, embedding_dim, num_layers, batch_size, seq_len, use_cuda, mode='word', start_token=0):
+    def __init__(self, vocab_size, hidden_dim, embedding_dim, num_layers, use_cuda, mode='word', start_token=0):
         super(Generator, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.use_cuda = use_cuda
         self.start_token = start_token
 
-        # Defnine embeddings
+        # Define embeddings
         self.emb = nn.Embedding(vocab_size, embedding_dim)
 
         if mode == "char":
@@ -30,8 +43,23 @@ class Generator(nn.Module):
                 self.emb.weight.data = torch.eye(vocab_size)
                 self.emb.weight.requires_grad = False
 
-        self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers=self.num_layers, batch_first=True)
-        self.lin = nn.Linear(hidden_dim, vocab_size)
+        # Set number of layers to 1
+        self.num_layers = 1
+
+        # Map every word to an annotation
+        self.lstm_enc = nn.LSTMCell(embedding_dim, hidden_dim)
+
+        # Maintain hidden state for decoding distribution
+        # Check input_dim (could do context and input??)
+        # Context dim == hidden dim
+        self.lstm_dec = nn.LSTMCell(hidden_dim, hidden_dim)
+
+        # Init alignment model
+        # We can precompute Ua * hj to save computation, CHECK PAPER
+        # In our case we can store it until timestep
+        self.alignment_model = FeedForward(hidden_dim + hidden_dim, hidden_dim, 1)
+
+        self.linear = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
         self.init_params()
 
@@ -42,11 +70,31 @@ class Generator(nn.Module):
         """
         emb = self.emb(x)
         h0, c0 = self.init_hidden(x.size(0))
+        h1, c1 = self.init_hidden(self.hidden_dim)
         self.lstm.flatten_parameters()
-        output, (h, c) = self.lstm(emb, (h0, c0))
-        pred = self.softmax(self.lin(output.contiguous().view(-1, self.hidden_dim)))
-        print("Forward:")
-        print(pred.size())
+        # First encode the sentence up to time t
+
+        # MAKE TORCH TENSORS
+        annotations = list()
+        hidden_dec = list()
+        for i in range(len(x)):
+            e_i = list()
+            h_enc, c_enc = self.lstm_enc(x[i], (h0, c0))
+            annotations.append(h)
+            # Create context vector
+            for j in range(i - 1):
+                e_ij = self.alignment_model(hidden_dec[i - 1], annotations[j])
+                e_i.append(e_ij)
+            
+            a_i = nn.softmax(e_i)
+            # SUM OVER J
+            c_i = torch.sum(a_i * annotations)
+            # Decode using other LSTM
+            h_dec, c_dec = self.lstm_dec(c_i, (h1, c1))
+            hidden_dec.append(h_dec)
+
+        # FIX THIS AS TENSOR AND IN LOOP AS WELL
+        pred = self.softmax(self.linear(output.contiguous().view(-1, self.hidden_dim)))
         return pred
 
     def step(self, x, h, c):
@@ -59,7 +107,7 @@ class Generator(nn.Module):
         emb = self.emb(x)
         self.lstm.flatten_parameters()
         output, (h, c) = self.lstm(emb, (h, c))
-        pred = F.softmax(self.lin(output.view(-1, self.hidden_dim)), dim=-1)
+        pred = self.softmax(self.linear(output.view(-1, self.hidden_dim)))
         return pred, h, c
 
     def init_hidden(self, batch_size):
