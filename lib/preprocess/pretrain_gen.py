@@ -15,7 +15,7 @@ sys.path.append('../model')
 sys.path.append('../utilities')
 sys.path.append('../../')
 
-from generator_enc import Generator
+from generator_att import Generator
 from discriminator import Discriminator
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
