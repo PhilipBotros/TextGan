@@ -3,14 +3,15 @@ from lib.preprocess.vocabchar import VocabChar
 from settings import parse_arguments
 
 opt = parse_arguments()
+path = './data/sample-1M.jsonl'
 
 if opt.mode == 'word':
-    labels = Vocabulary('data/sample-1M.jsonl')
-    out_path = 'data/'
+    labels = Vocabulary(path)
+    out_path = './data/'
     labels.save_vocab(out_path)
-else if opt.mode == 'char':
-    labels = VocabChar('data/sample-1M.jsonl')
-    out_path = 'data/'
+elif opt.mode == 'char':
+    labels = VocabChar(path)
+    out_path = './data/'
     labels.save_vocab(out_path)
 else:
     raise Exception('Mode not recognized.')

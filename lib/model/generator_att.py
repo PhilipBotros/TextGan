@@ -9,23 +9,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-
-
-
-class FeedForward(nn.Module):
-    def __init__(self, input_size, hidden_size, num_classes):
-        super(FeedForward, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size) 
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_size, num_classes)  
-    
-    def forward(self, x):
-        h1 = self.relu(self.fc1(x))
-        out = self.fc2(h1)
-        return out
+from feedforward import FeedForward
 
 class Generator(nn.Module):
-    """Generator """
+    """Generator with self attention"""
 
     def __init__(self, vocab_size, hidden_dim, embedding_dim, num_layers, batch_size, seq_len, use_cuda, mode='word', start_token=0):
         super(Generator, self).__init__()
@@ -81,8 +68,6 @@ class Generator(nn.Module):
         outputs_dec = list()
 
         # Start with annotation vector
-        # a_t = torch.zeros(batch_size, 1)
-        # MAKE VARIABLE OR NOT?
         context_t = Variable(torch.zeros(self.batch_size, self.hidden_dim))
         for i in range(self.seq_len):
             # Put in embeddings per timestep of (batch_size x embedding_dim) into the encoder
@@ -91,8 +76,8 @@ class Generator(nn.Module):
             # Could put it to 2?
             if i > 0:
                 e_t = list()
+                # Loop over all timesteps - 1 (preceding words)
                 for j in range(i):
-                    # e_tj = self.alignment_model(hidden_dec[i - 1], annotations[j])
                     e_tj = self.alignment_model(torch.cat((h_t_dec, annotations[j]), 1))
                     e_t.append(e_tj)
 

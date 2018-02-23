@@ -34,7 +34,7 @@ if opt.cuda is not None and opt.cuda >= 0:
 
 # Default data paths
 if opt.positive_file is None:
-    opt.positive_file = os.path.join(os.getcwd(), '../../data/real_char.data')
+    opt.positive_file = os.path.join(os.getcwd(), '../../data/real.data')
 
 # Load vocab dict
 if opt.mode == 'word':
@@ -78,10 +78,10 @@ for i in range(opt.num_epochs):
     loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
                        opt.batch_size, opt.cuda)
     print('Epoch [%d] Model Loss: %f' % (i, loss))
-    # samples = generator.sample(opt.batch_size, opt.seq_len)
+    samples = generator.sample(opt.batch_size, opt.seq_len)
 
-    # # Print some samples
-    # print_samples(10, idx_to_word, samples, opt.mode)
+    # Print some samples
+    print_samples(10, idx_to_word, samples, opt.mode)
 
     if i % opt.save_every == 0:
         torch.save(generator.state_dict(), opt.gen_path)
