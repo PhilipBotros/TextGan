@@ -69,6 +69,8 @@ class Generator(nn.Module):
 
         # Start with annotation vector
         context_t = Variable(torch.zeros(self.batch_size, self.hidden_dim))
+        if self.use_cuda:
+            context_t.cuda()
         for i in range(self.seq_len):
             # Put in embeddings per timestep of (batch_size x embedding_dim) into the encoder
             h_t_enc, c_t_enc = self.lstm_enc(emb[:,i,:], (h_t_enc, c_t_enc))

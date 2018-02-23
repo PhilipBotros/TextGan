@@ -37,9 +37,9 @@ def parse_arguments():
     parser.add_argument('--batch_size', default=64, type=int, help="Number of sequences per batch.")
     parser.add_argument('--num_epochs', default=100, type=int,
                         help="Number of Generator/Discriminator epochs.")
-    parser.add_argument('--num_gen', default=30002, type=int,
+    parser.add_argument('--num_gen', default=100, type=int,
                         help="How much fake sequences to generate per Discriminator epoch.")
-    parser.add_argument('--vocab_size', default=300, type=int,
+    parser.add_argument('--vocab_size', default=30002, type=int,
                         help="Number of characters/words.")
     parser.add_argument('--num_class', default=2, type=int,
                         help="Number of Discriminator output classes.")
