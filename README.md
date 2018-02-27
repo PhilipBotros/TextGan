@@ -19,3 +19,5 @@ $ ./get_data.sh
   - Compare attention generator with basic generator on sample output
   - Integrate pretrain and train scripts into a single master script
   - Enable settings of different types of generators
+  - Get pytorch to run on Das-4
+  - Vary attention lookback time
