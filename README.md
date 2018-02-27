@@ -12,5 +12,10 @@ $ ./get_data.sh
 ```
 
 ### Todo's
-
-  - Run on our own dataset
+  - Build an oracle model LSTM (from SeqGan) for pure error comparison
+  - Finish sampling operation for attention generator
+  - Compare attention generator with basic generator on time-per-epoch
+  - Compare attention generator with basic generator on log-likelihood
+  - Compare attention generator with basic generator on sample output
+  - Integrate pretrain and train scripts into a single master script
+  - Enable settings of different types of generators
