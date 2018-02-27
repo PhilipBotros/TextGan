@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from feedforward import FeedForward
 
+
 class Generator(nn.Module):
     """Generator with self attention"""
 
@@ -44,11 +45,16 @@ class Generator(nn.Module):
         self.lstm_dec = nn.LSTMCell(hidden_dim, hidden_dim)
         self.linear_dec = nn.Linear(hidden_dim, vocab_size)
 
+        if self.use_cuda:
+            self.lstm_dec = self.lstm_dec.cuda()
+            self.lstm_enc = self.lstm_enc.cuda()
+
         # Init alignment model
         # We can precompute Ua * hj to save computation, CHECK PAPER
         # In our case we can store it until timestep I think
         self.alignment_model = FeedForward(hidden_dim + hidden_dim, hidden_dim, 1)
-
+        if self.use_cuda:
+            self.alignment_model = self.alignment_model.cuda()
         self.linear = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.Softmax(dim=-1)
         self.log_softmax = nn.LogSoftmax(dim=-1)
@@ -68,12 +74,12 @@ class Generator(nn.Module):
         outputs_dec = list()
 
         # Start with annotation vector
-        context_t = Variable(torch.zeros(self.batch_size, self.hidden_dim))
+        context_t = Variable(torch.zeros((self.batch_size, self.hidden_dim)))
         if self.use_cuda:
-            context_t.cuda()
+            context_t = context_t.cuda()
         for i in range(self.seq_len):
             # Put in embeddings per timestep of (batch_size x embedding_dim) into the encoder
-            h_t_enc, c_t_enc = self.lstm_enc(emb[:,i,:], (h_t_enc, c_t_enc))
+            h_t_enc, c_t_enc = self.lstm_enc(emb[:, i, :], (h_t_enc, c_t_enc))
             annotations.append(h_t_enc)
             # Could put it to 2?
             if i > 0:
@@ -91,7 +97,7 @@ class Generator(nn.Module):
                 # Stack hidden states up until timestep t
                 # (Batch_size x hidden_size x timestep - 1)
                 hidden_state = torch.stack(annotations, 2)[:, :, :-1]
-                # Unpack tensor 
+                # Unpack tensor
                 hidden_state = hidden_state.contiguous().view(self.batch_size, -1)
 
                 a_t = a_t.repeat(1, self.hidden_dim)
@@ -103,7 +109,7 @@ class Generator(nn.Module):
                 # Get back to 3 dimensional tensor and sum over the time dimension for context vector
                 context_t = a_t.view(self.batch_size, self.hidden_dim, i)
                 context_t = torch.sum(context_t, dim=2)
-            
+
             # Give context vector (batch_size x hidden_dim) as input to the decoder
             h_t_dec, c_t_dec = self.lstm_dec(context_t, (h_t_dec, c_t_dec))
             output_dec = self.log_softmax(self.linear_dec(h_t_dec))
@@ -112,7 +118,7 @@ class Generator(nn.Module):
 
         # Reduce to ((batch_size x seq_len), vocab_size) for smooth log likelihood computation
         outputs = torch.stack(outputs_dec, 1).view(-1, self.vocab_size)
-        
+
         return outputs
 
     def step(self, x, h, c):

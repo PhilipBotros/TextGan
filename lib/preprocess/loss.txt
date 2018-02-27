@@ -1,0 +1,10 @@
+Epoch [0] Model Loss: 7.778565
+Epoch [0] Model Loss: 7.777839
+Epoch [1] Model Loss: 7.712788
+Epoch [2] Model Loss: 7.700014
+Epoch [3] Model Loss: 7.691736
+Epoch [4] Model Loss: 7.685280
+Epoch [5] Model Loss: 7.680262
+Epoch [6] Model Loss: 7.676225
+Epoch [7] Model Loss: 7.673514
+Epoch [8] Model Loss: 7.671513
