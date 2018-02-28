@@ -106,3 +106,6 @@ out/
 #aux code
 test.py
 *.json
+
+#saved models
+*.pt
