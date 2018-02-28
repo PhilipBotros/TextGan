@@ -6,7 +6,7 @@ from torch.autograd import Variable
 def read_file(data_file, seq_len):
     with open(data_file, 'r') as f:
         lines = f.readlines()
-        
+
     lis = []
     for line in lines:
         l = line.strip().split(' ')
@@ -56,7 +56,6 @@ def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, ful
         else:
             pred = model.forward(data)
         loss = criterion(pred, target)
-        print(loss.data[0])
         total_loss += loss.data[0]
         total_words += data.size(0) * data.size(1)
         optimizer.zero_grad()

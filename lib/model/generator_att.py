@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from feedforward import FeedForward
 
+
 class Generator(nn.Module):
     """Generator with self attention"""
 
@@ -44,11 +45,16 @@ class Generator(nn.Module):
         self.lstm_dec = nn.LSTMCell(hidden_dim, hidden_dim)
         self.linear_dec = nn.Linear(hidden_dim, vocab_size)
 
+        if self.use_cuda:
+            self.lstm_dec = self.lstm_dec.cuda()
+            self.lstm_enc = self.lstm_enc.cuda()
+
         # Init alignment model
         # We can precompute Ua * hj to save computation, CHECK PAPER
         # In our case we can store it until timestep I think
         self.alignment_model = FeedForward(hidden_dim + hidden_dim, hidden_dim, 1)
-
+        if self.use_cuda:
+            self.alignment_model = self.alignment_model.cuda()
         self.linear = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.Softmax(dim=-1)
         self.log_softmax = nn.LogSoftmax(dim=-1)
@@ -61,72 +67,111 @@ class Generator(nn.Module):
         """
 
         # Embeddings are (batch_size x seq_len x embedding_dim)
-        emb = self.emb(x)
+        # emb = self.emb(x)
         h_t_enc, c_t_enc = self.init_hidden(self.batch_size)
         h_t_dec, c_t_dec = self.init_hidden(self.batch_size)
         annotations = list()
         outputs_dec = list()
 
         # Start with annotation vector
-        context_t = Variable(torch.zeros(self.batch_size, self.hidden_dim))
+        context_t = Variable(torch.zeros((self.batch_size, self.hidden_dim)))
         if self.use_cuda:
-            context_t.cuda()
+            context_t = context_t.cuda()
+
         for i in range(self.seq_len):
-            # Put in embeddings per timestep of (batch_size x embedding_dim) into the encoder
-            h_t_enc, c_t_enc = self.lstm_enc(emb[:,i,:], (h_t_enc, c_t_enc))
+            output_dec, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t = self.step(
+                x[:, i], context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations)
+            # # Put in embeddings per timestep of (batch_size x embedding_dim) into the encoder
+            # h_t_enc, c_t_enc = self.lstm_enc(emb[:, i, :], (h_t_enc, c_t_enc))
+            # annotations.append(h_t_enc)
+            # # Could put it to 2?
+            # if i > 0:
+            #     e_t = list()
+            #     # Loop over all timesteps - 1 (preceding words)
+            #     for j in range(i):
+            #         e_tj = self.alignment_model(torch.cat((h_t_dec, annotations[j]), 1))
+            #         e_t.append(e_tj)
+            #
+            #     # Create alignment vector for all elements in the batch
+            #     # (Batch_size x timestep - 1)
+            #     e_t = torch.stack(e_t, 1).squeeze(2)
+            #     a_t = self.softmax(e_t)
+            #
+            #     # Stack hidden states up until timestep t
+            #     # (Batch_size x hidden_size x timestep - 1)
+            #     hidden_state = torch.stack(annotations, 2)[:, :, :-1]
+            #     # Unpack tensor
+            #     hidden_state = hidden_state.contiguous().view(self.batch_size, -1)
+            #
+            #     a_t = a_t.repeat(1, self.hidden_dim)
+            #
+            #     # Compute context vector for every example in the batch
+            #     context_t = a_t * hidden_state
+            #
+            #     # Get back to 3 dimensional tensor and sum over the time dimension for context vector
+            #     # (Batch_size x hidden_size)
+            #     context_t = a_t.view(self.batch_size, self.hidden_dim, i)
+            #     context_t = torch.sum(context_t, dim=2)
+            #
+            # # Give context vector (batch_size x hidden_dim) as input to the decoder
+            # h_t_dec, c_t_dec = self.lstm_dec(context_t, (h_t_dec, c_t_dec))
+            # output_dec = self.log_softmax(self.linear_dec(h_t_dec))
+            # # Output is (batch_size x vocab_size)
             annotations.append(h_t_enc)
-            # Could put it to 2?
-            if i > 0:
-                e_t = list()
-                # Loop over all timesteps - 1 (preceding words)
-                for j in range(i):
-                    e_tj = self.alignment_model(torch.cat((h_t_dec, annotations[j]), 1))
-                    e_t.append(e_tj)
-
-                # Create alignment vector for all elements in the batch
-                # (Batch_size x timestep - 1)
-                e_t = torch.stack(e_t, 1).squeeze(2)
-                a_t = self.softmax(e_t)
-
-                # Stack hidden states up until timestep t
-                # (Batch_size x hidden_size x timestep - 1)
-                hidden_state = torch.stack(annotations, 2)[:, :, :-1]
-                # Unpack tensor 
-                hidden_state = hidden_state.contiguous().view(self.batch_size, -1)
-
-                a_t = a_t.repeat(1, self.hidden_dim)
-
-                # Compute context vector for every example in the batch
-                # (Batch_size x hidden_size)
-                context_t = a_t * hidden_state
-
-                # Get back to 3 dimensional tensor and sum over the time dimension for context vector
-                context_t = a_t.view(self.batch_size, self.hidden_dim, i)
-                context_t = torch.sum(context_t, dim=2)
-            
-            # Give context vector (batch_size x hidden_dim) as input to the decoder
-            h_t_dec, c_t_dec = self.lstm_dec(context_t, (h_t_dec, c_t_dec))
-            output_dec = self.log_softmax(self.linear_dec(h_t_dec))
-            # Output is (batch_size x vocab_size)
             outputs_dec += [output_dec]
 
         # Reduce to ((batch_size x seq_len), vocab_size) for smooth log likelihood computation
         outputs = torch.stack(outputs_dec, 1).view(-1, self.vocab_size)
-        
+
         return outputs
 
-    def step(self, x, h, c):
+    def step(self, x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, t, annotations):
         """
         Args:
             x: (batch_size,  1), sequence of tokens generated by generator
             h: (1, batch_size, hidden_dim), lstm hidden state
             c: (1, batch_size, hidden_dim), lstm cell state
         """
+        # (batch_size x embedding_dim)
         emb = self.emb(x)
-        self.lstm.flatten_parameters()
-        output, (h, c) = self.lstm(emb, (h, c))
-        pred = self.log_softmax(self.linear(output.view(-1, self.hidden_dim)))
-        return pred, h, c
+
+        # Put embeddings of current timestep into the encoder
+        h_t_enc, c_t_enc = self.lstm_enc(emb, (h_t_enc, c_t_enc))
+
+        # Start updating the context vector after first timestep
+        if t > 0:
+            # List of unnormalized alignment vectors
+            e_t = list()
+            # Loop over all timesteps - 1 (preceding words)
+            for j in range(t):
+                e_tj = self.alignment_model(torch.cat((h_t_dec, annotations[j]), 1))
+                e_t.append(e_tj)
+
+            # Create alignment vector for all elements in the batch
+            # (Batch_size x timestep - 1)
+            e_t = torch.stack(e_t, 1).squeeze(2)
+            a_t = self.softmax(e_t)
+
+            # Stack hidden states up until timestep t
+            # (batch_size x hidden_size x timestep - 1)
+            hidden_state = torch.stack(annotations, 2)
+            # Unpack tensor (batch_size x hidden_size * (timestep - 1))
+            hidden_state = hidden_state.contiguous().view(self.batch_size, -1)
+
+            a_t = a_t.repeat(1, self.hidden_dim)
+
+            # Compute context vector for every example in the batch
+            context_t = a_t * hidden_state
+
+            # Get back to 3 dimensional tensor and sum over the time dimension for context vector
+            # (Batch_size x hidden_size)
+            context_t = a_t.view(self.batch_size, self.hidden_dim, t)
+            context_t = torch.sum(context_t, dim=2)
+
+        # Give context vector (batch_size x hidden_dim) as input to the decoder
+        h_t_dec, c_t_dec = self.lstm_dec(context_t, (h_t_dec, c_t_dec))
+        pred = self.log_softmax(self.linear_dec(h_t_dec))
+        return pred, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t
 
     def init_hidden(self, batch_size):
         h = Variable(torch.zeros((batch_size, self.hidden_dim)))
