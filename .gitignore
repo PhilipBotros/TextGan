@@ -99,13 +99,16 @@ ENV/
 # mypy
 .mypy_cache/
 
-# data folder
+# Data folder
 data/
 out/
 
-#aux code
+# Aux code
 test.py
 *.json
 
-#saved models
+# Saved models
 *.pt
+
+# Google drive
+*.ini
