@@ -34,7 +34,7 @@ def parse_arguments():
     parser.add_argument('--seed', default=88, type=int, help="Random seed.")
     parser.add_argument('--lstm_rewards', default=False, type=bool,
                         help="Whether the rewards stem directly from LSTM per-word output. When False Monte Carlo search is used instead.")
-    parser.add_argument('--batch_size', default=64, type=int, help="Number of sequences per batch.")
+    parser.add_argument('--batch_size', default=128, type=int, help="Number of sequences per batch.")
     parser.add_argument('--num_epochs', default=100, type=int,
                         help="Number of Generator/Discriminator epochs.")
     parser.add_argument('--num_gen', default=100, type=int,
@@ -43,18 +43,19 @@ def parse_arguments():
                         help="Number of characters/words.")
     parser.add_argument('--num_class', default=2, type=int,
                         help="Number of Discriminator output classes.")
-    parser.add_argument('--seq_len', default=10, type=int, help="Sequence length.")
+    parser.add_argument('--seq_len', default=5, type=int, help="Sequence length.")
     parser.add_argument('--save_every', default=1, type=int,
                         help="Save every X number of epochs.")
 
     # Model settings
     parser.add_argument('--num_layers', default=2, type=int,
                         help="Number of layers of the models.")
-    parser.add_argument('--emb_dim', default=128, type=int, help="Word Embedding size.")
+    parser.add_argument('--emb_dim', default=512, type=int, help="Word Embedding size.")
     parser.add_argument('--gen_hid_dim', default=256, type=int,
                         help="Hidden layer size of the Generator.")
     parser.add_argument('--dis_hid_dim', default=128, type=int,
                         help="Hidden layer size of the Discriminator.")
-    parser.add_argument('--mode', default='word', type=str, help="Switch between 'char' and 'word' LSTM's")
+    parser.add_argument('--mode', default='word', type=str, help="Switch between 'char' and 'word' LSTM's.")
+    parser.add_argument('--attention', default=True, type=bool, help="Switch between LSTM's with or without attention.")
 
     return parser.parse_args()

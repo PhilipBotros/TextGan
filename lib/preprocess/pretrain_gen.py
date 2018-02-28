@@ -15,11 +15,12 @@ sys.path.append('../model')
 sys.path.append('../utilities')
 sys.path.append('../../')
 
-from generator_att import Generator
+from generator_att import Generator as GeneratorAttention
+from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
-from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags
+from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags, print_samples
 from settings import parse_arguments
 
 
@@ -55,9 +56,13 @@ if opt.gen_path is None:
 if opt.mode == "char":
     opt.emb_dim = opt.vocab_size
 
-# Define Networks
-generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-                      opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+# Define Generator
+if opt.attention:
+    generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                                   opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+else:
+    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                          opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
 
 if os.path.isfile(opt.gen_path):
     generator.load_state_dict(torch.load(opt.gen_path))
@@ -76,15 +81,15 @@ gen_data_iter = GenDataIter(real_data, opt.batch_size)
 
 print('Pretrain with MLE ...')
 for i in range(opt.num_epochs):
+    samples = generator.sample(opt.batch_size, opt.seq_len)
+    # Print some samples
+    print_samples(10, idx_to_word, samples, opt.mode)
+
     loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
                        opt.batch_size, opt.cuda)
     print('Epoch [%d] Model Loss: %f' % (i, loss))
     with open('loss.txt', 'a') as f:
         f.write('Epoch [%d] Model Loss: %f\n' % (i, loss))
-    # samples = generator.sample(opt.batch_size, opt.seq_len)
-
-    # Print some samples
-    # print_samples(10, idx_to_word, samples, opt.mode)
 
     if i % opt.save_every == 0:
         torch.save(generator.state_dict(), opt.gen_path)
