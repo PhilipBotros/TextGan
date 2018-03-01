@@ -147,9 +147,12 @@ def train(opt, data_path):
 
 
 if __name__ == '__main__':
+    # Path to data folder
+    data_path = os.path.join(os.getcwd(), '../../data')
+
     # Process and print command line arguments
     opt = parse_arguments()
-    print_flags(opt)
+    print_flags(opt, data_path)
 
     # Train the model
     train(opt)

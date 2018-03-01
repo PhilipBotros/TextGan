@@ -99,7 +99,7 @@ def pretrain_gen(opt, data_path):
 
 if __name__ == '__main__':
     # Path to data folder
-    data_path = os.path.join(os.getcwd(), 'data')
+    data_path = os.path.join(os.getcwd(), '../../data')
 
     # Process and print command line arguments
     opt = parse_arguments()

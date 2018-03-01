@@ -93,9 +93,12 @@ def pretrain_dis(opt, data_path):
 
 
 if __name__ == '__main__':
+    # Path to data folder
+    data_path = os.path.join(os.getcwd(), '../../data')
+
     # Process and print command line arguments
     opt = parse_arguments()
-    print_flags(opt)
+    print_flags(opt, data_path)
 
     # Pre-train the discriminator
     pretrain_dis(opt)
