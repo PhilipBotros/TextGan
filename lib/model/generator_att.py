@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from feedforward import FeedForward
+from feedforward import FeedForwardSum
 
 
 class Generator(nn.Module):
@@ -48,7 +48,8 @@ class Generator(nn.Module):
         # Init alignment model
         # We can precompute Ua * hj to save computation, CHECK PAPER
         # In our case we can store it until timestep I think
-        self.alignment_model = FeedForward(hidden_dim + hidden_dim, hidden_dim, 1)
+        # SUM OVER 2 input layers
+        self.alignment_model = FeedForwardSum(hidden_dim, hidden_dim, 1)
 
         self.linear = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.Softmax(dim=-1)
@@ -107,7 +108,7 @@ class Generator(nn.Module):
             e_t = list()
             # Loop over all timesteps - 1 (preceding words)
             for j in range(t):
-                e_tj = self.alignment_model(torch.cat((h_t_dec, annotations[j]), 1))
+                e_tj = self.alignment_model(h_t_dec, annotations[j])
                 e_t.append(e_tj)
 
             # Create alignment vector for all elements in the batch

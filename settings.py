@@ -59,7 +59,7 @@ def parse_arguments():
     parser.add_argument('--attention', default=1, type=int, help="Switch between LSTM's with or without attention.")
 
     # Main script settings
-    parser.add_argument('--pre_gen', default=0, type=int, help="1: Pretrain the generator.")
+    parser.add_argument('--pre_gen', default=1, type=int, help="1: Pretrain the generator.")
     parser.add_argument('--pre_dis', default=0, type=int, help="1: Pretrain the discriminator.")
     parser.add_argument('--train_gan', default=1, type=int, help="1: Adverserial training.")
 
