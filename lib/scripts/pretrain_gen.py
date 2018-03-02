@@ -27,7 +27,7 @@ from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
-from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples
+from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples, save_samples
 
 
 def pretrain_gen(opt, data_path):
@@ -84,7 +84,7 @@ def pretrain_gen(opt, data_path):
     # Pretrain Generator using MLE
     gen_criterion = nn.NLLLoss(size_average=False)
     parameters = filter(lambda p: p.requires_grad, generator.parameters())
-    gen_optimizer = optim.Adam(parameters, lr=1e-2)
+    gen_optimizer = optim.Adam(parameters)
     if opt.cuda:
         gen_criterion = gen_criterion.cuda()
 
