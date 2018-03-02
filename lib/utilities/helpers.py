@@ -98,13 +98,17 @@ def print_flags(opt):
         print(key + ' : ' + str(value))
 
 
-def print_samples(num, idx_to_key, samples, mode):
+def print_samples(num, idx_to_key, samples):
     """
     Print given number of samples.
     """
-    if mode == 'word':
+    for i in range(num):
+        print(' '.join([idx_to_key[str(idx)] for idx in samples.data[i]]))
+
+
+def save_samples(num, idx_to_key, samples, file, epoch):
+    with open(file, 'a') as f:
+        f.write("\n\n Samples of epoch {}:\n".format(epoch))
         for i in range(num):
-            print(' '.join([idx_to_key[str(idx)] for idx in samples.data[i]]))
-    else:
-        for i in range(num):
-            print(''.join([idx_to_word[str(idx)] for idx in samples.data[i]]))
+            f.write(' '.join([idx_to_key[str(idx)] for idx in samples.data[i]]))
+            f.write('\n')
