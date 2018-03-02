@@ -62,10 +62,10 @@ def pretrain_gen(opt, data_path):
     # Define Generator
     if opt.attention:
         print("Using attention")
-        # generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-        #                                opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
-        generator = GeneratorTimestep(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-                                      opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+        generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+        # generator = GeneratorTimestep(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+        #                               opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
 
     else:
         generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
