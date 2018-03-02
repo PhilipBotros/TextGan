@@ -22,6 +22,7 @@ if __name__ == '__main__':
 
 # Custom libraries
 from generator_att import Generator as GeneratorAttention
+from generator_timestep import Generator as GeneratorTimestep
 from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
@@ -60,14 +61,19 @@ def pretrain_gen(opt, data_path):
 
     # Define Generator
     if opt.attention:
-        generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+        print("Using attention")
+        # generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+        #                                opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+        generator = GeneratorTimestep(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                                      opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+
     else:
         generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
                               opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
 
-    # if os.path.isfile(opt.gen_path):
-    #     generator.load_state_dict(torch.load(opt.gen_path))
+    if os.path.isfile(opt.gen_path):
+        print("Loading generator")
+        generator.load_state_dict(torch.load(opt.gen_path))
 
     if opt.cuda:
         generator = generator.cuda()

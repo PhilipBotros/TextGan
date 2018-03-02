@@ -86,7 +86,7 @@ class Generator(nn.Module):
 
         return outputs
 
-    def step(self, x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, t, annotations):
+    def step(self, x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, t, annotations, sample=False):
         """
         A single timestep of the Encoder-Decoder LSTM.
         Args:
@@ -133,7 +133,13 @@ class Generator(nn.Module):
 
         # Give context vector (batch_size x hidden_dim) as input to the decoder
         h_t_dec, c_t_dec = self.lstm_dec(context_t, (h_t_dec, c_t_dec))
-        pred = self.log_softmax(self.linear_dec(h_t_dec))
+
+        # When we sample, we wish to return the respective probabilities, for the loss we need the log-probs
+        if sample:
+            self.softmax(self.linear_dec(h_t_dec))
+        else:
+            pred = self.log_softmax(self.linear_dec(h_t_dec))
+
         return pred, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t
 
     def init_hidden(self, batch_size):
@@ -171,7 +177,7 @@ class Generator(nn.Module):
         if flag:
             for i in range(seq_len):
                 output, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t = self.step(
-                    x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations)
+                    x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
                 x = output.multinomial(1)
                 annotations.append(h_t_enc)
                 samples.append(x)
@@ -180,14 +186,14 @@ class Generator(nn.Module):
             lis = x.chunk(x.size(1), dim=1)
             for i in range(given_len):
                 output, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t = self.step(
-                    lis[i], context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations)
+                    lis[i], context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
                 annotations.append(h_t_enc)
             samples.extend(lis)
             x = output.multinomial(1)
             for i in range(given_len, seq_len):
                 samples.append(x)
                 output, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t = self.step(
-                    x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations)
+                    x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
                 annotations.append(h_t_enc)
                 x = output.multinomial(1)
         output = torch.cat(samples, dim=1)

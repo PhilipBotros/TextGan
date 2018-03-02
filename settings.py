@@ -43,14 +43,14 @@ def parse_arguments():
                         help="Number of characters/words.")
     parser.add_argument('--num_class', default=2, type=int,
                         help="Number of Discriminator output classes.")
-    parser.add_argument('--seq_len', default=10, type=int, help="Sequence length.")
+    parser.add_argument('--seq_len', default=5, type=int, help="Sequence length.")
     parser.add_argument('--save_every', default=1, type=int,
                         help="Save every X number of epochs.")
 
     # Model settings
     parser.add_argument('--num_layers', default=2, type=int,
                         help="Number of layers of the models.")
-    parser.add_argument('--emb_dim', default=128, type=int, help="Word Embedding size.")
+    parser.add_argument('--emb_dim', default=512, type=int, help="Word Embedding size.")
     parser.add_argument('--gen_hid_dim', default=256, type=int,
                         help="Hidden layer size of the Generator.")
     parser.add_argument('--dis_hid_dim', default=128, type=int,

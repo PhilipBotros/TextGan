@@ -1,0 +1,58 @@
+ocab_size : 30003
+ttention : 1
+ave_every : 1
+eed : 88
+uda : 0
+en_path : gen_time.pt
+um_gen : 100
+emote : 0
+re_dis : 0
+ositive_file : None
+is_path : None
+ocab_file : None
+rain_gan : 1
+mb_dim : 512
+ode : word
+um_layers : 2
+stm_rewards : 0
+um_class : 2
+is_hid_dim : 128
+eq_len : 5
+re_gen : 0
+en_hid_dim : 256
+atch_size : 128
+um_epochs : 100
+sing attention
+retrain with MLE ...
+7 reversing versatile provide wallet
+ut relishes aam felix pathology
+anesh noisy jam geek abandons
+truck piercing guatemala mobilizes fiona
+osh tab cns cyr barge
+llegiant beluga petty roundtable descriptio
+akville moneygram brodie ecuador shabbat
+nnouncer ev leap benin smes
+rcade pain complacent rhino kluwer
+60 cipla committed vigil rains
+poch [0] Model Loss: 2.518076
+nm indexes hugo laos hare
+tarpoint rabble till eastbound wb
+ontributor heartless congestion accidental
+79 promptly g20 hybrids ww2
+et candlelight dissolves bystander microbea
+oycotting butland ooh 282 skydiver
+idelines devotional lmt zahid oils
+ispensaries onslaught blotter odegbami valu
+rg kogi consistency altitude fallers
+kipton amlin shirtless sail stats
+poch [1] Model Loss: 2.197118
+airview unite others mississippi bridal
+mbarks 251 crooked nc queens
+ranchisees peacekeepers defies fam cadence
+rkham ctv olson reportedly crack
+eige axle billed indemnity 140
+lliot mogul damage injustice bark
+itt deluxe connected releases scanner
+hining associa searchable microwave wr
+arameters revives denying kurdi teller
+ricks controls gurgaon prague compelling

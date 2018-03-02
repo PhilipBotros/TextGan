@@ -1,6 +1,7 @@
 import numpy as np
 import json
 from torch.autograd import Variable
+import time
 
 
 def read_file(data_file, seq_len):
@@ -43,7 +44,10 @@ def generate_samples(model, batch_size, generated_num, seq_len):
 def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, full=None):
     total_loss = 0.
     total_words = 0.
+    end_loop = 0.0
     for (data, target) in data_iter:
+        # print("Time spent between loop: {} seconds".format(time.time() - end_loop))
+        # start_loop = time.time()
         if data.shape[0] != batch_size:
             continue
         data = Variable(data)
@@ -61,6 +65,8 @@ def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, ful
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        # print("Time spent within loop: {} seconds".format(time.time() - start_loop))
+        # end_loop = time.time()
     data_iter.reset()
 
     return total_loss / total_words

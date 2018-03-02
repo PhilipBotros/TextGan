@@ -45,7 +45,7 @@ class Generator(nn.Module):
         self.lstm.flatten_parameters()
         output, (h, c) = self.lstm(emb, (h0, c0))
         pred = self.softmax(self.lin(output.contiguous().view(-1, self.hidden_dim)))
-  
+
         return pred
 
     def step(self, x, h, c):
@@ -86,6 +86,9 @@ class Generator(nn.Module):
         if flag:
             for i in range(seq_len):
                 output, h, c = self.step(x, h, c)
+                print(output.shape)
+                print(output.data[1, 1:20])
+                print(max(output.data[1, :]))
                 x = output.multinomial(1)
                 samples.append(x)
         else:

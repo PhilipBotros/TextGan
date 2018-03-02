@@ -32,7 +32,7 @@ class Generator(nn.Module):
                 # One hot encodings
                 self.emb.weight.data = torch.eye(vocab_size)
                 self.emb.weight.requires_grad = False
-        
+
         self.lstm = nn.LSTMCell(embedding_dim, hidden_dim)
         self.linear = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
@@ -50,7 +50,7 @@ class Generator(nn.Module):
         outputs = list()
         for i in range(self.seq_len):
             # Put in embeddings per timestep of (batch_size x embedding_dim)
-            h_t, c_t = self.lstm(emb[:,i,:], (h_t, c_t))
+            h_t, c_t = self.lstm(emb[:, i, :], (h_t, c_t))
             output = self.softmax(self.linear(h_t))
             # Output is (batch_size x vocab_size)
             outputs += [output]
@@ -67,9 +67,8 @@ class Generator(nn.Module):
             c: (1, batch_size, hidden_dim), lstm cell state
         """
         emb = self.emb(x)
-        self.lstm.flatten_parameters()
-        output, (h, c) = self.lstm(emb, (h, c))
-        pred = F.softmax(self.lin(output.view(-1, self.hidden_dim)), dim=-1)
+        h, c = self.lstm(emb, (h, c))
+        pred = F.softmax(self.linear(h.view(-1, self.hidden_dim)), dim=-1)
         return pred, h, c
 
     def init_hidden(self, batch_size):
@@ -97,6 +96,9 @@ class Generator(nn.Module):
         if flag:
             for i in range(seq_len):
                 output, h, c = self.step(x, h, c)
+                print(output.shape)
+                print(output.data[1, 1:20])
+                print(max(output.data[1, :]))
                 x = output.multinomial(1)
                 samples.append(x)
         else:
