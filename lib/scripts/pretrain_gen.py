@@ -93,11 +93,15 @@ def pretrain_gen(opt, data_path):
     print('Pretrain with MLE ...')
     for i in range(opt.num_epochs):
         samples = generator.sample(opt.batch_size, opt.seq_len)
-        # Print some samples
-        print_samples(10, idx_to_word, samples, opt.mode)
+
+        # Print and save some samples
+        print_samples(10, idx_to_word, samples)
+        save_samples(10, idx_to_word, samples, "samples.txt", i)
 
         loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
                            opt.batch_size, opt.cuda)
+
+        # Print and save loss
         print('Epoch [%d] Model Loss: %f' % (i, loss))
         with open('loss.txt', 'a') as f:
             f.write('Epoch [%d] Model Loss: %f\n' % (i, loss))

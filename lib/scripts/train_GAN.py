@@ -111,7 +111,7 @@ def train(opt, data_path):
         for it in range(1):
             # Generate some samples for printing
             samples = generator.sample(opt.batch_size, opt.seq_len)
-            print_samples(10, idx_to_word, samples, opt.mode)
+            print_samples(10, idx_to_word, samples)
 
             # Construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((opt.batch_size, 1)).type(torch.LongTensor)
