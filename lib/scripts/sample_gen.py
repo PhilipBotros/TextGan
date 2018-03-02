@@ -30,7 +30,7 @@ from data_iter import GenDataIter, DisDataIter
 from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples
 
 
-def pretrain_gen(opt, data_path):
+def sample_gen(opt, data_path):
     if opt.cuda is not None and opt.cuda >= 0:
         # Enable GPU
         torch.cuda.set_device(opt.cuda)
@@ -115,4 +115,4 @@ if __name__ == '__main__':
     print_flags(opt)
 
     # Pre-train the generator
-    pretrain_gen(opt, data_path)
+    sample_gen(opt, data_path)

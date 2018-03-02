@@ -36,7 +36,10 @@ def pretrain_dis(opt, data_path):
 
     # Default data paths
     if opt.positive_file is None:
-        opt.positive_file = os.path.join(data_path, 'real_char.data')
+        if opt.mode == 'word':
+            opt.positive_file = os.path.join(data_path, 'real.data')
+        elif opt.mode == 'char':
+            opt.positive_file = os.path.join(data_path, 'real_char.data')
 
     # Load vocab dict
     if opt.mode == 'word':

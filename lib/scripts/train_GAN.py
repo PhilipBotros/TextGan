@@ -39,8 +39,10 @@ def train(opt, data_path):
         opt.cuda = True
 
     if opt.positive_file is None:
-        # Use default data paths if none are specified
-        opt.positive_file = os.path.join(data_path, 'real_char.data')
+        if opt.mode == 'word':
+            opt.positive_file = os.path.join(data_path, 'real.data')
+        elif opt.mode == 'char':
+            opt.positive_file = os.path.join(data_path, 'real_char.data')
 
     # Load vocabulary
     if opt.mode == 'word':
