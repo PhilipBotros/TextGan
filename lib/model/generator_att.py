@@ -9,13 +9,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from feedforward import FeedForwardSum
+from feedforward import FeedForward, FeedForwardSum
 
 
 class Generator(nn.Module):
     """Generator with self attention"""
 
-    def __init__(self, vocab_size, hidden_dim, embedding_dim, num_layers, batch_size, seq_len, use_cuda, mode='word', start_token=0):
+    def __init__(self, vocab_size, hidden_dim, embedding_dim, num_layers, batch_size, seq_len, use_cuda, mode='word', start_token=0, att_type='sum'):
         super(Generator, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -24,6 +24,7 @@ class Generator(nn.Module):
         self.seq_len = seq_len
         self.batch_size = batch_size
         self.vocab_size = vocab_size
+        self.att_type = att_type
 
         # Define embeddings
         self.emb = nn.Embedding(vocab_size, embedding_dim)
@@ -49,7 +50,12 @@ class Generator(nn.Module):
         # We can precompute Ua * hj to save computation, CHECK PAPER
         # In our case we can store it until timestep I think
         # SUM OVER 2 input layers
-        self.alignment_model = FeedForwardSum(hidden_dim, hidden_dim, 1)
+        if self.att_type == 'cat':
+            self.alignment_model = FeedForward(hidden_dim + hidden_dim, hidden_dim, 1)
+        elif self.att_type == 'sum':
+            self.alignment_model = FeedForwardSum(hidden_dim, hidden_dim, 1)
+        else:
+            raise(Exception('Attention model type not recognized, use --att_type to specify sum or cat.'))
 
         self.linear = nn.Linear(hidden_dim, vocab_size)
         self.softmax = nn.Softmax(dim=-1)
@@ -108,7 +114,11 @@ class Generator(nn.Module):
             e_t = list()
             # Loop over all timesteps - 1 (preceding words)
             for j in range(t):
-                e_tj = self.alignment_model(h_t_dec, annotations[j])
+                if self.att_type == 'cat':
+                    e_tj = self.alignment_model(torch.cat((h_t_dec, annotations[j]), 1))
+                elif self.att_type == 'sum':
+                    e_tj = self.alignment_model(h_t_dec, annotations[j])
+
                 e_t.append(e_tj)
 
             # Create alignment vector for all elements in the batch

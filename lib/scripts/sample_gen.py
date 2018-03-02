@@ -24,10 +24,7 @@ if __name__ == '__main__':
 from generator_att import Generator as GeneratorAttention
 from generator_timestep import Generator as GeneratorTimestep
 from generator import Generator
-from discriminator import Discriminator
-from rollout import Rollout
-from data_iter import GenDataIter, DisDataIter
-from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples
+from helpers import create_vocab_dict, print_samples
 
 
 def sample_gen(opt, data_path):
@@ -35,13 +32,6 @@ def sample_gen(opt, data_path):
         # Enable GPU
         torch.cuda.set_device(opt.cuda)
         opt.cuda = True
-
-    # Default data paths
-    if opt.positive_file is None:
-        if opt.mode == 'word':
-            opt.positive_file = os.path.join(data_path, 'real.data')
-        elif opt.mode == 'char':
-            opt.positive_file = os.path.join(data_path, 'real_char.data')
 
     # Load vocab dict
     if opt.mode == 'word':
@@ -51,10 +41,7 @@ def sample_gen(opt, data_path):
     else:
         raise Exception('Mode not recognized.')
 
-    # Load real data
-    real_data = read_file(opt.positive_file, opt.seq_len)
-
-    # Default model paths
+    # Default model path
     if opt.gen_path is None:
         opt.gen_path = 'generator_attention.pt'
 
@@ -66,10 +53,7 @@ def sample_gen(opt, data_path):
     if opt.attention:
         print("Using attention")
         generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
-        # generator = GeneratorTimestep(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-        #                               opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
-
+                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode, att_type=opt.att_type)
     else:
         generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
                               opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
@@ -77,33 +61,15 @@ def sample_gen(opt, data_path):
     if os.path.isfile(opt.gen_path):
         print("Loading generator")
         generator.load_state_dict(torch.load(opt.gen_path))
+    else:
+        raise Exception("No generator specified, please use flag --gen_path to specify which generator to load.")
 
     if opt.cuda:
         generator = generator.cuda()
 
-    # Pretrain Generator using MLE
-    gen_criterion = nn.NLLLoss(size_average=False)
-    parameters = filter(lambda p: p.requires_grad, generator.parameters())
-    gen_optimizer = optim.Adam(parameters, lr=1e-2)
-    if opt.cuda:
-        gen_criterion = gen_criterion.cuda()
-
-    gen_data_iter = GenDataIter(real_data, opt.batch_size)
-
-    print('Pretrain with MLE ...')
-    for i in range(opt.num_epochs):
-        samples = generator.sample(opt.batch_size, opt.seq_len)
-        # Print some samples
-        print_samples(10, idx_to_word, samples, opt.mode)
-
-        loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
-                           opt.batch_size, opt.cuda)
-        print('Epoch [%d] Model Loss: %f' % (i, loss))
-        with open('loss.txt', 'a') as f:
-            f.write('Epoch [%d] Model Loss: %f\n' % (i, loss))
-
-        if i % opt.save_every == 0:
-            torch.save(generator.state_dict(), opt.gen_path)
+    print('Sampling ...')
+    samples = generator.sample(opt.batch_size, opt.seq_len)
+    print_samples(opt.batch_size, idx_to_word, samples)
 
 
 if __name__ == '__main__':
