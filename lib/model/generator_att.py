@@ -136,7 +136,7 @@ class Generator(nn.Module):
 
         # When we sample, we wish to return the respective probabilities, for the loss we need the log-probs
         if sample:
-            self.softmax(self.linear_dec(h_t_dec))
+            pred = self.softmax(self.linear_dec(h_t_dec))
         else:
             pred = self.log_softmax(self.linear_dec(h_t_dec))
 
