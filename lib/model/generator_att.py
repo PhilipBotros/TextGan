@@ -106,6 +106,8 @@ class Generator(nn.Module):
         if t > 0:
             # List of unnormalized alignment vectors
             e_t = list()
+
+            # We can save time here (SAVE STATE, i.e. REUSE ET)
             # Loop over all timesteps - 1 (preceding words)
             for j in range(t):
                 e_tj = self.alignment_model(h_t_dec, annotations[j])

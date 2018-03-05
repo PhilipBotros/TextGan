@@ -1,0 +1,38 @@
+cuda : 0
+remote : False
+positive_file : None
+vocab_file : None
+gen_path : None
+dis_path : None
+seed : 88
+lstm_rewards : False
+batch_size : 128
+num_epochs : 100
+num_gen : 100
+vocab_size : 30003
+num_class : 2
+seq_len : 5
+save_every : 1
+num_layers : 2
+emb_dim : 512
+gen_hid_dim : 256
+dis_hid_dim : 128
+mode : word
+attention : True
+emb.weight <class 'torch.FloatTensor'> torch.Size([30003, 512])
+lstm_enc.weight_ih <class 'torch.FloatTensor'> torch.Size([1024, 512])
+lstm_enc.weight_hh <class 'torch.FloatTensor'> torch.Size([1024, 256])
+lstm_enc.bias_ih <class 'torch.FloatTensor'> torch.Size([1024])
+lstm_enc.bias_hh <class 'torch.FloatTensor'> torch.Size([1024])
+lstm_dec.weight_ih <class 'torch.FloatTensor'> torch.Size([1024, 256])
+lstm_dec.weight_hh <class 'torch.FloatTensor'> torch.Size([1024, 256])
+lstm_dec.bias_ih <class 'torch.FloatTensor'> torch.Size([1024])
+lstm_dec.bias_hh <class 'torch.FloatTensor'> torch.Size([1024])
+linear_dec.weight <class 'torch.FloatTensor'> torch.Size([30003, 256])
+linear_dec.bias <class 'torch.FloatTensor'> torch.Size([30003])
+alignment_model.fc1.weight <class 'torch.FloatTensor'> torch.Size([256, 512])
+alignment_model.fc1.bias <class 'torch.FloatTensor'> torch.Size([256])
+alignment_model.fc2.weight <class 'torch.FloatTensor'> torch.Size([1, 256])
+alignment_model.fc2.bias <class 'torch.FloatTensor'> torch.Size([1])
+linear.weight <class 'torch.FloatTensor'> torch.Size([30003, 256])
+linear.bias <class 'torch.FloatTensor'> torch.Size([30003])
