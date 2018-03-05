@@ -27,7 +27,7 @@ from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
-from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples
+from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples, save_samples
 
 
 def pretrain_gen(opt, data_path):
@@ -66,7 +66,7 @@ def pretrain_gen(opt, data_path):
     if opt.attention:
         print("Using attention")
         generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode, att_type=opt.att_type)
         # generator = GeneratorTimestep(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
         #                               opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
 

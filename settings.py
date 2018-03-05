@@ -57,6 +57,7 @@ def parse_arguments():
                         help="Hidden layer size of the Discriminator.")
     parser.add_argument('--mode', default='word', type=str, help="Switch between 'char' and 'word' LSTM's.")
     parser.add_argument('--attention', default=1, type=int, help="Switch between LSTM's with or without attention.")
+    parser.add_argument('--att_type', default='sum', type=str, help="Type of attention model, either 'sum' or 'cat'.")
 
     # Main script settings
     parser.add_argument('--pre_gen', default=1, type=int, help="1: Pretrain the generator.")
