@@ -209,6 +209,6 @@ class Generator(nn.Module):
                     x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
                 annotations.append(h_t_enc)
                 x = output.multinomial(1)
-        output = torch.stack(samples).transpose(1,0)
+        output = torch.stack(samples).transpose(1, 0)
 
         return output

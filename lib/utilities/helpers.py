@@ -44,29 +44,43 @@ def generate_samples(model, batch_size, generated_num, seq_len):
 def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, full=None):
     total_loss = 0.
     total_words = 0.
-    end_loop = 0.0
-    for (data, target) in data_iter:
+    timetime = 0.
+    # end_loop = 0.0
+    for i, (data, target) in enumerate(data_iter):
         # print("Time spent between loop: {} seconds".format(time.time() - end_loop))
-        # start_loop = time.time()
+        start_loop = time.time()
         if data.shape[0] != batch_size:
             continue
         data = Variable(data)
-        target = Variable(target)
+        target = Variable(target.contiguous().view(-1).pin_memory())
+        # print("Time spent up till variable shell: {} seconds".format(time.time() - start_loop))
         if is_cuda:
-            data, target = data.cuda(), target.cuda()
-        target = target.contiguous().view(-1)
+            data, target = data.cuda(), target.cuda(async=True)
+        # print("Time spent up till cuda: {} seconds".format(time.time() - start_loop))
+
+        # print("Time spent up till data loading: {} seconds".format(time.time() - start_loop))
         if full:
             pred = model.forward(data, full)
         else:
             pred = model.forward(data)
+        # print("Time spent up till forward: {} seconds".format(time.time() - start_loop))
+        # target = target.contiguous().view(-1)
         loss = criterion(pred, target)
+        # print("Time spent up till loss: {} seconds".format(time.time() - start_loop))
         total_loss += loss.data[0]
         total_words += data.size(0) * data.size(1)
         optimizer.zero_grad()
         loss.backward()
+        # print("Time spent up till backward: {} seconds".format(time.time() - start_loop))
         optimizer.step()
         # print("Time spent within loop: {} seconds".format(time.time() - start_loop))
+        timetime += time.time() - start_loop
         # end_loop = time.time()
+        if(i % 100 == 0):
+            try:
+                print("Average loop time: {}".format(timetime / i))
+            except:
+                pass
     data_iter.reset()
 
     return total_loss / total_words

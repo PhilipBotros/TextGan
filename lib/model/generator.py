@@ -86,9 +86,6 @@ class Generator(nn.Module):
         if flag:
             for i in range(seq_len):
                 output, h, c = self.step(x, h, c)
-                print(output.shape)
-                print(output.data[1, 1:20])
-                print(max(output.data[1, :]))
                 x = output.multinomial(1)
                 samples.append(x)
         else:
