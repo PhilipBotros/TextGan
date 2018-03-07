@@ -1,5 +1,5 @@
-from lib.preprocess.vocabulary import Vocabulary
-from lib.preprocess.vocabchar import VocabChar
+from lib.scripts.vocabulary import Vocabulary
+from lib.scripts.vocabchar import VocabChar
 from settings import parse_arguments
 
 opt = parse_arguments()

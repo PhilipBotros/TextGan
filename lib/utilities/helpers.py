@@ -61,7 +61,6 @@ def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, ful
             pred = model.forward(data)
         loss = criterion(pred, target)
         total_loss += loss.data[0]
-        print(loss.data[0])
         total_words += data.size(0) * data.size(1)
         optimizer.zero_grad()
         loss.backward()
