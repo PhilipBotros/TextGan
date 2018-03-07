@@ -173,7 +173,7 @@ class Generator(nn.Module):
         if x is None:
             flag = True
         if flag:
-            x = Variable(self.start_token * torch.ones((batch_size, 1)).long())
+            x = Variable(self.start_token * torch.ones((batch_size)).long())
 
         # Intialize hidden states and storage
         h_t_enc, c_t_enc = self.init_hidden(self.batch_size)
@@ -191,7 +191,7 @@ class Generator(nn.Module):
             for i in range(seq_len):
                 output, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t = self.step(
                     x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
-                x = output.multinomial(1)
+                x = output.multinomial(1).squeeze(1)
                 annotations.append(h_t_enc)
                 samples.append(x)
         else:
@@ -209,6 +209,7 @@ class Generator(nn.Module):
                     x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
                 annotations.append(h_t_enc)
                 x = output.multinomial(1)
-        output = torch.cat(samples, dim=1)
+        output = torch.stack(samples).transpose(1, 0)
+        print(output.size())
 
         return output
