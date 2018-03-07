@@ -7,7 +7,7 @@ import json
 
 class Vocabulary(object):
 
-    def __init__(self, filename, nr_words=30000):
+    def __init__(self, filename, nr_words=30000, titles=False):
 
         self.file = filename
         self.start_token = '<SOS>'
@@ -15,6 +15,7 @@ class Vocabulary(object):
         self.words.update(self.start_token)
         self.sentences = list()
         self.cntr = Counter()
+        self.titles = titles
         self.create_vocab(nr_words)
 
     def create_vocab(self, nr_words):
@@ -22,9 +23,12 @@ class Vocabulary(object):
         with open(self.file, 'r') as f:
 
             for article in reader(f):
-                title = tokenize(article['title'])
-                self.cntr.update(title)
-                self.sentences.append(title)
+                if self.titles:
+                    content = tokenize(article['title'])
+                else:
+                    content = tokenize(article['content'])
+                self.cntr.update(content)
+                self.sentences.append(content)
 
         print("Obama: {}".format(self.cntr["obama"]))
         print("Trump: {}".format(self.cntr["trump"]))
@@ -45,7 +49,7 @@ class Vocabulary(object):
             json.dump(self.idx_to_word, f)
 
         # Save in id format direct;y for easier debugging wrt original implementation
-        open(out_path + 'real.data', 'w').writelines('\n'.join(self.sentences))
+        open(out_path + 'real_content.data', 'w').writelines('\n'.join(self.sentences))
 
     def convert_sentence(self, sentence, word_to_idx):
 
