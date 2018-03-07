@@ -74,7 +74,7 @@ def pretrain_dis(opt, data_path):
     # Pretrain Discriminator
     dis_criterion = nn.NLLLoss(size_average=False)
     parameters = filter(lambda p: p.requires_grad, discriminator.parameters())
-    dis_optimizer = optim.Adam(parameters)
+    dis_optimizer = optim.Adam(parameters, opt.lr)
 
     if opt.cuda:
         dis_criterion = dis_criterion.cuda()

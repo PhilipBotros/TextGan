@@ -18,6 +18,7 @@ class Generator(nn.Module):
     def __init__(self, vocab_size, hidden_dim, embedding_dim, num_layers, batch_size, seq_len, use_cuda, mode='word', start_token=0, att_type='sum'):
         super(Generator, self).__init__()
         self.hidden_dim = hidden_dim
+        self.embedding_dim = embedding_dim
         self.num_layers = num_layers
         self.use_cuda = use_cuda
         self.start_token = start_token
@@ -43,7 +44,7 @@ class Generator(nn.Module):
 
         # Create decoder
         # Context dim == hidden dim
-        self.lstm_dec = nn.LSTMCell(hidden_dim, hidden_dim)
+        self.lstm_dec = nn.LSTMCell(hidden_dim + embedding_dim, hidden_dim)
         self.linear_dec = nn.Linear(hidden_dim, vocab_size)
 
         # Init alignment model
@@ -69,8 +70,8 @@ class Generator(nn.Module):
             x: (batch_size, seq_len), input sequences
         """
         # Intialize hidden states and storage
-        h_t_enc, c_t_enc = self.init_hidden(self.batch_size)
-        h_t_dec, c_t_dec = self.init_hidden(self.batch_size)
+        h_t_enc, c_t_enc = self.init_hidden(self.batch_size, self.hidden_dim)
+        h_t_dec, c_t_dec = self.init_hidden(self.batch_size, self.hidden_dim)
         annotations = list()
         outputs_dec = list()
 
@@ -104,10 +105,8 @@ class Generator(nn.Module):
         """
         # (batch_size x embedding_dim)
         emb = self.emb(x)
-
         # Put embeddings of current timestep into the encoder
         h_t_enc, c_t_enc = self.lstm_enc(emb, (h_t_enc, c_t_enc))
-
         # Start updating the context vector after first timestep
         if t > 0:
             # List of unnormalized alignment vectors
@@ -144,8 +143,9 @@ class Generator(nn.Module):
             context_t = a_t.view(self.batch_size, self.hidden_dim, t)
             context_t = torch.sum(context_t, dim=2)
 
+        input_dec = torch.cat([context_t, emb], dim=1)
         # Give context vector (batch_size x hidden_dim) as input to the decoder
-        h_t_dec, c_t_dec = self.lstm_dec(context_t, (h_t_dec, c_t_dec))
+        h_t_dec, c_t_dec = self.lstm_dec(input_dec, (h_t_dec, c_t_dec))
 
         # When we sample, we wish to return the respective probabilities, for the loss we need the log-probs
         if sample:
@@ -155,9 +155,9 @@ class Generator(nn.Module):
 
         return pred, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t
 
-    def init_hidden(self, batch_size):
-        h = Variable(torch.zeros((batch_size, self.hidden_dim)))
-        c = Variable(torch.zeros((batch_size, self.hidden_dim)))
+    def init_hidden(self, batch_size, hidden_dim):
+        h = Variable(torch.zeros((batch_size, hidden_dim)))
+        c = Variable(torch.zeros((batch_size, hidden_dim)))
         if self.use_cuda:
             h, c = h.cuda(), c.cuda()
         return h, c
@@ -176,8 +176,8 @@ class Generator(nn.Module):
             x = Variable(self.start_token * torch.ones((batch_size)).long())
 
         # Intialize hidden states and storage
-        h_t_enc, c_t_enc = self.init_hidden(self.batch_size)
-        h_t_dec, c_t_dec = self.init_hidden(self.batch_size)
+        h_t_enc, c_t_enc = self.init_hidden(self.batch_size, self.hidden_dim)
+        h_t_dec, c_t_dec = self.init_hidden(self.batch_size, self.hidden_dim)
         context_t = Variable(torch.zeros((self.batch_size, self.hidden_dim)))
         annotations = list()
         outputs_dec = list()
@@ -210,6 +210,5 @@ class Generator(nn.Module):
                 annotations.append(h_t_enc)
                 x = output.multinomial(1)
         output = torch.stack(samples).transpose(1, 0)
-        print(output.size())
 
         return output
