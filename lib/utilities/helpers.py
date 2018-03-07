@@ -51,8 +51,10 @@ def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, ful
         start_loop = time.time()
         if data.shape[0] != batch_size:
             continue
+        print(type(data))
         data = Variable(data)
-        target = Variable(target.contiguous().view(-1).pin_memory())
+        target = Variable(target.contiguous().view(-1))
+        print(data.shape, target.shape)
         # print("Time spent up till variable shell: {} seconds".format(time.time() - start_loop))
         if is_cuda:
             data, target = data.cuda(), target.cuda(async=True)
@@ -68,7 +70,7 @@ def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, ful
         loss = criterion(pred, target)
         # print("Time spent up till loss: {} seconds".format(time.time() - start_loop))
         total_loss += loss.data[0]
-        print(loss.data[0])
+        # print(loss.data[0])
         total_words += data.size(0) * data.size(1)
         optimizer.zero_grad()
         loss.backward()

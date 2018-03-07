@@ -7,6 +7,24 @@ import math
 
 import numpy as np
 import torch
+from torch.utils.data import Dataset, DataLoader
+
+
+class GenDataSet(Dataset):
+    """"Data iter to load sentences"""
+
+    def __init__(self, data_lis):
+        self.data = torch.LongTensor(data_lis)
+        print(self.data.shape)
+        self.data_len = len
+
+    def __len__(self):
+        return self.data_len
+
+    def __getitem__(self, idx):
+        datapoint = self.data[idx, 0:-1]
+        target = self.data[idx, 1:]
+        return data, target
 
 
 class GenDataIter(object):

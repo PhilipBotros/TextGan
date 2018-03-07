@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
+from torch.utils.data import DataLoader
 
 # Main script libraries
 if __name__ == '__main__':
@@ -26,7 +27,7 @@ from generator_timestep import Generator as GeneratorTimestep
 from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
-from data_iter import GenDataIter, DisDataIter
+from data_iter import GenDataIter, DisDataIter, GenDataSet
 from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples, save_samples
 
 
@@ -89,7 +90,9 @@ def pretrain_gen(opt, data_path):
     if opt.cuda:
         gen_criterion = gen_criterion.cuda()
 
-    gen_data_iter = GenDataIter(real_data, opt.batch_size)
+    # gen_data_iter = GenDataIter(real_data, opt.batch_size)
+    gen_data_iter = DataLoader(GenDataSet(real_data), batch_size=opt.batch_size,
+                               shuffle=True, num_workers=1, pin_memory=True)
 
     print('Pretrain with MLE ...')
     for i in range(opt.num_epochs):
