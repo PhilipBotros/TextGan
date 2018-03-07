@@ -39,7 +39,7 @@ def pretrain_gen(opt, data_path):
     # Default data paths
     if opt.positive_file is None:
         if opt.mode == 'word':
-            opt.positive_file = os.path.join(data_path, 'real.data')
+            opt.positive_file = os.path.join(data_path, 'real_content.data')
         elif opt.mode == 'char':
             opt.positive_file = os.path.join(data_path, 'real_char.data')
 
