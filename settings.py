@@ -58,7 +58,7 @@ def parse_arguments():
     parser.add_argument('--mode', default='word', type=str, help="Switch between 'char' and 'word' LSTM's.")
     parser.add_argument('--attention', default=1, type=int, help="Switch between LSTM's with or without attention.")
     parser.add_argument('--att_type', default='sum', type=str, help="Type of attention model, either 'sum' or 'cat'.")
-    parser.add_argument('--lr', default=1e-3, type=int, help="Learning rate of the optimizer")
+    parser.add_argument('--lr', default=1e-3, type=float, help="Learning rate of the optimizer")
 
     # Main script settings
     parser.add_argument('--pre_gen', default=1, type=int, help="1: Pretrain the generator.")
