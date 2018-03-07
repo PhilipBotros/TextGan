@@ -92,10 +92,10 @@ def train(opt, data_path):
     # Loss and optimizer for the Generator and Discriminator
     gen_loss = GANLoss()
     gen_parameters = filter(lambda p: p.requires_grad, generator.parameters())
-    gen_optimizer = optim.Adam(gen_parameters)
+    gen_optimizer = optim.Adam(gen_parameters, opt.lr)
     dis_loss = nn.NLLLoss(size_average=False)
     dis_parameters = filter(lambda p: p.requires_grad, discriminator.parameters())
-    dis_optimizer = optim.Adam(dis_parameters)
+    dis_optimizer = optim.Adam(dis_parameters, opt.lr)
 
     # Rollout policy; Monte Carlo search or rewards from LSTM
     rollout = Rollout(generator, 0.8)

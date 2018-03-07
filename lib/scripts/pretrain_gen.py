@@ -84,7 +84,8 @@ def pretrain_gen(opt, data_path):
     # Pretrain Generator using MLE
     gen_criterion = nn.NLLLoss(size_average=False)
     parameters = filter(lambda p: p.requires_grad, generator.parameters())
-    gen_optimizer = optim.Adam(parameters, lr=1e-3)
+    gen_optimizer = optim.Adam(parameters, opt.lr)
+    # gen_optimizer = optim.RMSProp(parameters, opt.lr)
     if opt.cuda:
         gen_criterion = gen_criterion.cuda()
 
