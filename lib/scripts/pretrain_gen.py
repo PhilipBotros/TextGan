@@ -90,9 +90,9 @@ def pretrain_gen(opt, data_path):
     if opt.cuda:
         gen_criterion = gen_criterion.cuda()
 
-    # gen_data_iter = GenDataIter(real_data, opt.batch_size)
-    gen_data_iter = DataLoader(GenDataSet(real_data), batch_size=opt.batch_size,
-                               shuffle=True, num_workers=1, pin_memory=True)
+    gen_data_iter = GenDataIter(real_data, opt.batch_size)
+    # gen_data_iter = DataLoader(GenDataSet(real_data), batch_size=opt.batch_size,
+    #                            shuffle=True, num_workers=1, pin_memory=True)
 
     print('Pretrain with MLE ...')
     for i in range(opt.num_epochs):
