@@ -22,13 +22,17 @@ class Vocabulary(object):
 
         with open(self.file, 'r') as f:
 
-            for article in reader(f):
+            for i, article in enumerate(reader(f)):
                 if self.titles:
                     content = tokenize(article['title'])
                 else:
                     content = tokenize(article['content'])
                 self.cntr.update(content)
                 self.sentences.append(content)
+                if i % 1000 == 0:
+                    print("{} articles loaded".format(i))
+
+        print("Content loaded...")
 
         print("Obama: {}".format(self.cntr["obama"]))
         print("Trump: {}".format(self.cntr["trump"]))
@@ -40,11 +44,13 @@ class Vocabulary(object):
         # Convert to id directly for easier debugging wrt original implementation
         self.word_to_idx = {word: i for i, word in enumerate(self.words)}
         self.idx_to_word = {i: word for i, word in enumerate(self.words)}
+        print("Words indexed...")
         self.sentences = [''.join(self.convert_sentence(sentence, self.word_to_idx))
                           for sentence in self.sentences]
+        print("Sentences converted...")
 
     def save_vocab(self, out_path):
-
+        print("Saving vocab...")
         with open(out_path + 'idx_to_word.json', 'w') as f:
             json.dump(self.idx_to_word, f)
 
@@ -55,8 +61,8 @@ class Vocabulary(object):
 
         unknown_token = word_to_idx['<UNK>']
         sentence = str(word_to_idx[self.start_token]) + ' ' + \
-                    ' '.join(str(word_to_idx[word]) if word in word_to_idx
-                            else str(unknown_token) for word in sentence)
+            ' '.join(str(word_to_idx[word]) if word in word_to_idx
+                     else str(unknown_token) for word in sentence)
 
         return sentence
 
@@ -78,4 +84,3 @@ def tokenize(string):
     words = [word for word in words if len(word) > 0]
 
     return words
-
