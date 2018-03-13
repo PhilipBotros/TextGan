@@ -57,7 +57,7 @@ def pretrain_gen(opt, data_path):
 
     # Default model paths
     if opt.gen_path is None:
-        opt.gen_path = 'generator_attention.pt'
+        opt.gen_path = 'generator_attention_content.pt'
 
     # One hot encodings for character LSTMs
     if opt.mode == "char":

@@ -8,23 +8,24 @@ def read_file(data_file, seq_len):
     lis = []
     index = seq_len + 1
     with open(data_file, 'r') as f:
-            for line in f: 
-                l = line.strip().split(' ')
-                # Split line in n sequences:
-                nr_seq = int(len(l) / index)
+        for line in f:
+            l = line.strip().split(' ')
+            # Split line in n sequences:
+            nr_seq = int(len(l) / index)
 
-                for i in range(nr_seq):
-                    el = l[i * index: (i + 1) * index] 
-                # # Only load sequences of the set length
-                # if len(l) > seq_len:
-                #     try:
-                #         # Catch faulty sentences
-                #         l = [int(s) for i, s in enumerate(l) if i <= seq_len]
-                #     except:
-                #         continue
-                    lis.append(el)
-                if len(lis) % 1000 == 0:
-                    print(len(lis))
+            for i in range(nr_seq):
+                el = l[i * index: (i + 1) * index]
+            # # Only load sequences of the set length
+            # if len(l) > seq_len:
+            #     try:
+            #         # Catch faulty sentences
+            #         l = [int(s) for i, s in enumerate(l) if i <= seq_len]
+            #     except:
+            #         continue
+                lis.append(el)
+            if len(lis) > 1000000:
+                print("Loaded")
+                break
     return lis
 
 
@@ -65,7 +66,6 @@ def train_epoch(model, data_iter, criterion, optimizer, batch_size, is_cuda, ful
             pred = model.forward(data)
         loss = criterion(pred, target)
         total_loss += loss.data[0]
-        print(loss.data[0])
         total_words += data.size(0) * data.size(1)
         optimizer.zero_grad()
         loss.backward()
