@@ -57,7 +57,7 @@ def pretrain_gen(opt, data_path):
 
     # Default model paths
     if opt.gen_path is None:
-        opt.gen_path = 'generator_attention_content.pt'
+        opt.gen_path = 'generator_content.pt'
 
     # One hot encodings for character LSTMs
     if opt.mode == "char":
@@ -89,7 +89,7 @@ def pretrain_gen(opt, data_path):
 
     # gen_data_iter = GenDataIter(real_data, opt.batch_size)
     gen_data_iter = DataLoader(GenDataSet(real_data), batch_size=opt.batch_size,
-                               shuffle=True, num_workers=1, pin_memory=True)
+                               shuffle=True, num_workers=4, pin_memory=True)
 
     print('Pretrain with MLE ...')
     for i in range(opt.num_epochs):
@@ -97,14 +97,14 @@ def pretrain_gen(opt, data_path):
 
         # Print and save some samples
         print_samples(10, idx_to_word, samples)
-        save_samples(10, idx_to_word, samples, "samples.txt", i)
+        save_samples(10, idx_to_word, samples, opt.sample_file, i)
 
         loss = train_epoch(generator, gen_data_iter, gen_criterion, gen_optimizer,
                            opt.batch_size, opt.cuda)
 
         # Print and save loss
         print('Epoch [%d] Model Loss: %f' % (i, loss))
-        with open('loss.txt', 'a') as f:
+        with open(opt.loss_file, 'a') as f:
             f.write('Epoch [%d] Model Loss: %f\n' % (i, loss))
 
         if i % opt.save_every == 0:

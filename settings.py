@@ -27,6 +27,10 @@ def parse_arguments():
                         help="Path to file that contains training vocabulary.")
     parser.add_argument("--gen_path", default=None, type=str,
                         help="Path to file that contains pretrained Generator")
+    parser.add_argument("--sample_file", default="samples.txt", type=str,
+                        help="Path to file that stores samples")
+    parser.add_argument("--loss_file", default="loss.txt", type=str,
+                        help="Path to file that stores loss")
     parser.add_argument("--dis_path", default=None, type=str,
                         help="Path to file that contains pretrained Discriminator")
 

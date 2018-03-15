@@ -26,3 +26,17 @@ Epoch [24] Model Loss: 7.826005
 Epoch [0] Model Loss: 6.276299
 Epoch [1] Model Loss: 5.580081
 Epoch [2] Model Loss: 5.344022
+Epoch [0] Model Loss: 6.328473
+Epoch [1] Model Loss: 5.545536
+Epoch [2] Model Loss: 5.280944
+Epoch [3] Model Loss: 5.132822
+Epoch [4] Model Loss: 5.030609
+Epoch [5] Model Loss: 4.952873
+Epoch [6] Model Loss: 4.890379
+Epoch [7] Model Loss: 4.838114
+Epoch [8] Model Loss: 4.793688
+Epoch [9] Model Loss: 4.755170
+Epoch [10] Model Loss: 4.721117
+Epoch [11] Model Loss: 4.691160
+Epoch [12] Model Loss: 4.664298
+Epoch [13] Model Loss: 4.640087
