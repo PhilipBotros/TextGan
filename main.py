@@ -36,15 +36,20 @@ from pretrain_gen import pretrain_gen
 from pretrain_dis import pretrain_dis
 from helpers import print_flags
 from settings import parse_arguments
+from create_vocab import create_vocab
 
 
 if __name__ == '__main__':
+
     # Path to data folder
-    data_path = os.path.join(os.getcwd(), 'data')
+    data_path = os.path.join(os.getcwd(), 'data/')
 
     # Process and print command line arguments
     opt = parse_arguments()
     print_flags(opt)
+
+    if not os.path.isfile(data_path + 'real_content.data'):
+        create_vocab(opt)
 
     if bool(opt.pre_gen):
         pretrain_gen(opt, data_path)

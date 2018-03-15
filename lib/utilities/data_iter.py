@@ -14,7 +14,7 @@ class GenDataSet(Dataset):
     """"DataSet to load sentences"""
 
     def __init__(self, data_lis):
-        self.data = torch.LongTensor(data_lis)
+        self.data = torch.from_numpy(np.asarray(data_lis, dtype=np.int64))
         self.data_len = len(data_lis)
 
     def __len__(self):

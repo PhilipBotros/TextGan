@@ -68,8 +68,6 @@ def pretrain_gen(opt, data_path):
         print("Using attention")
         generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
                                        opt.batch_size, opt.seq_len, opt.cuda, opt.mode, att_type=opt.att_type)
-        # generator = GeneratorTimestep(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-        #                               opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
 
     else:
         generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
@@ -86,13 +84,12 @@ def pretrain_gen(opt, data_path):
     gen_criterion = nn.NLLLoss(size_average=False)
     parameters = filter(lambda p: p.requires_grad, generator.parameters())
     gen_optimizer = optim.Adam(parameters, opt.lr)
-    # gen_optimizer = optim.RMSProp(parameters, opt.lr)
     if opt.cuda:
         gen_criterion = gen_criterion.cuda()
 
-    gen_data_iter = GenDataIter(real_data, opt.batch_size)
-    # gen_data_iter = DataLoader(GenDataSet(real_data), batch_size=opt.batch_size,
-    #                            shuffle=True, num_workers=1, pin_memory=True)
+    # gen_data_iter = GenDataIter(real_data, opt.batch_size)
+    gen_data_iter = DataLoader(GenDataSet(real_data), batch_size=opt.batch_size,
+                               shuffle=True, num_workers=1, pin_memory=True)
 
     print('Pretrain with MLE ...')
     for i in range(opt.num_epochs):
