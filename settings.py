@@ -16,7 +16,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Training Parameters")
 
     # Device settings
-    parser.add_argument('--cuda', default=None, type=int,
+    parser.add_argument('--cuda', default=0, type=int,
                         help="Device number of GPU, None when CPU is used.")
     parser.add_argument('--remote', default=0, type=int, help="True when we run on a server.")
 
@@ -39,7 +39,7 @@ def parse_arguments():
     parser.add_argument('--lstm_rewards', default=0, type=int,
                         help="Whether the rewards stem directly from LSTM per-word output. When False Monte Carlo search is used instead.")
     parser.add_argument('--batch_size', default=128, type=int, help="Number of sequences per batch.")
-    parser.add_argument('--num_epochs', default=100, type=int,
+    parser.add_argument('--num_epochs', default=50, type=int,
                         help="Number of Generator/Discriminator epochs.")
     parser.add_argument('--num_gen', default=100, type=int,
                         help="How much fake sequences to generate per Discriminator epoch.")
@@ -67,6 +67,6 @@ def parse_arguments():
     # Main script settings
     parser.add_argument('--pre_gen', default=1, type=int, help="1: Pretrain the generator.")
     parser.add_argument('--pre_dis', default=0, type=int, help="1: Pretrain the discriminator.")
-    parser.add_argument('--train_gan', default=1, type=int, help="1: Adverserial training.")
+    parser.add_argument('--train_gan', default=0, type=int, help="1: Adverserial training.")
 
     return parser.parse_args()
