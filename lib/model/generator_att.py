@@ -199,14 +199,14 @@ class Generator(nn.Module):
             lis = x.chunk(x.size(1), dim=1)
             for i in range(given_len):
                 output, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t = self.step(
-                    lis[i], context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
+                    lis[i].squeeze(1), context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
                 annotations.append(h_t_enc)
             samples.extend(lis)
             x = output.multinomial(1)
             for i in range(given_len, seq_len):
                 samples.append(x)
                 output, h_t_enc, c_t_enc, h_t_dec, c_t_dec, context_t = self.step(
-                    x, context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
+                    x.squeeze(1), context_t, h_t_enc, c_t_enc, h_t_dec, c_t_dec, i, annotations, sample=True)
                 annotations.append(h_t_enc)
                 x = output.multinomial(1)
         output = torch.stack(samples).transpose(1, 0)
