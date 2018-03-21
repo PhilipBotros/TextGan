@@ -49,6 +49,7 @@ class Rollout(object):
                 for l in range(1, seq_len):
                     data = x[:, 0:l]
                     samples = self.own_model.sample(batch_size, seq_len, data)
+                    samples = samples.squeeze(2)
                     discriminator.init_hidden(batch_size)
                     pred = discriminator(samples, full)
                     pred = pred.cpu().data[:, 1].numpy()
