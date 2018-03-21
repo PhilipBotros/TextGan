@@ -21,6 +21,7 @@ if __name__ == '__main__':
     from helpers import print_flags
 
 # Custom libraries
+from generator_att import Generator as GeneratorAttention
 from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
@@ -40,7 +41,7 @@ def train(opt, data_path):
 
     if opt.positive_file is None:
         if opt.mode == 'word':
-            opt.positive_file = os.path.join(data_path, 'real.data')
+            opt.positive_file = os.path.join(data_path, 'real_content.data')
         elif opt.mode == 'char':
             opt.positive_file = os.path.join(data_path, 'real_char.data')
 
@@ -63,8 +64,17 @@ def train(opt, data_path):
     random.seed(opt.seed)
     np.random.seed(opt.seed)
 
-    # Define Networks
-    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
+    # Define Generator
+    if opt.attention:
+        print("Using attention")
+        generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode, att_type=opt.att_type)
+
+    else:
+        generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                              opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+
+    # Define Discriminator
     discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim,
                                   opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
     if opt.cuda:
@@ -73,9 +83,9 @@ def train(opt, data_path):
 
     # Default model paths
     if opt.gen_path is None:
-        opt.gen_path = 'generator_char.pt'
+        opt.gen_path = 'generator_content.pt'
     if opt.dis_path is None:
-        opt.dis_path = 'discriminator_char.pt'
+        opt.dis_path = 'discriminator_content.pt'
 
     # Load pretrained Generator and Discriminator when provided
     if os.path.isfile(opt.gen_path):
