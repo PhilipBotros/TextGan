@@ -2,7 +2,7 @@ from lib.scripts.vocabulary import Vocabulary
 from lib.scripts.vocabchar import VocabChar
 from settings import parse_arguments
 
-path = './data/sample-1M.jsonl'
+path = './data/sample-1m.jsonl'
 
 def create_vocab(opt):
 	if opt.mode == 'word':
