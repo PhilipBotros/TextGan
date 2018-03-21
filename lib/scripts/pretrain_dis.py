@@ -37,7 +37,7 @@ def pretrain_dis(opt, data_path):
     # Default data paths
     if opt.positive_file is None:
         if opt.mode == 'word':
-            opt.positive_file = os.path.join(data_path, 'real.data')
+            opt.positive_file = os.path.join(data_path, 'real_content.data')
         elif opt.mode == 'char':
             opt.positive_file = os.path.join(data_path, 'real_char.data')
 
@@ -54,20 +54,23 @@ def pretrain_dis(opt, data_path):
 
     # Default model paths
     if opt.gen_path is None:
-        opt.gen_path = 'generator_char.pt'
+        opt.gen_path = 'generator_content.pt'
     if opt.dis_path is None:
-        opt.dis_path = 'discriminator_char.pt'
+        opt.dis_path = 'discriminator_content.pt'
 
     # One-hot encodings with character LSTM's
     if opt.mode == 'char':
         opt.emb_dim = opt.vocab_size
 
-    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
+    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                              opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+
     discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim,
                                   opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
 
     if os.path.isfile(opt.gen_path):
         generator.load_state_dict(torch.load(opt.gen_path))
+        print('Loaded generator')
     if os.path.isfile(opt.dis_path):
         discriminator.load_state_dict(torch.load(opt.dis_path))
 
@@ -101,7 +104,7 @@ if __name__ == '__main__':
 
     # Process and print command line arguments
     opt = parse_arguments()
-    print_flags(opt, data_path)
+    print_flags(opt)
 
     # Pre-train the discriminator
-    pretrain_dis(opt)
+    pretrain_dis(opt, data_path)
