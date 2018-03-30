@@ -26,7 +26,7 @@ from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
-from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples
+from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_samples, save_samples
 from loss import GANLoss
 
 
@@ -122,6 +122,7 @@ def train(opt, data_path):
             # Generate some samples for printing
             samples = generator.sample(opt.batch_size, opt.seq_len)
             print_samples(10, idx_to_word, samples)
+            save_samples(10, idx_to_word, samples, opt.sample_file, i)
 
             # Construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((opt.batch_size, 1)).type(torch.LongTensor)
@@ -152,6 +153,8 @@ def train(opt, data_path):
             loss = train_epoch(discriminator, dis_data_iter,
                                dis_loss, dis_optimizer, opt.batch_size, opt.cuda, opt.lstm_rewards)
             print('Batch [%d] Loss: %f' % (num_epochs, loss))
+            with open(opt.loss_file, 'a') as f:
+                f.write('Epoch [%d] Model Loss: %f\n' % (i, loss))
 
         if num_epochs % opt.save_every == 0:
             torch.save(discriminator.state_dict(), opt.dis_path)

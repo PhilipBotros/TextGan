@@ -1,5 +1,6 @@
 # from helper import tokenize, convert_sentence
 from json_lines import reader
+from langdetect import detect
 from collections import Counter
 import re
 import json

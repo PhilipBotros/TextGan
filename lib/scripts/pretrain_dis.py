@@ -25,7 +25,7 @@ from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
 from data_iter import GenDataIter, DisDataIter
-from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags
+from helpers import read_file, create_vocab_dict, generate_samples, train_epoch, print_flags, save_samples, print_samples
 
 
 def pretrain_dis(opt, data_path):
@@ -63,7 +63,7 @@ def pretrain_dis(opt, data_path):
         opt.emb_dim = opt.vocab_size
 
     generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-                              opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+                          opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
 
     discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim,
                                   opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)
@@ -88,11 +88,18 @@ def pretrain_dis(opt, data_path):
 
     for i in range(opt.num_epochs):
         samples = generate_samples(generator, opt.batch_size, opt.num_gen, opt.seq_len)
+
+        # Print and save some samples
+        print_samples(10, idx_to_word, samples)
+        save_samples(10, idx_to_word, samples, opt.sample_file, i)
+
         dis_data_iter = DisDataIter(real_data, samples, opt.batch_size, opt.lstm_rewards)
         for _ in range(1):
             loss = train_epoch(discriminator, dis_data_iter,
                                dis_criterion, dis_optimizer, opt.batch_size, opt.cuda, opt.lstm_rewards)
             print('Epoch [%d], loss: %f' % (i, loss))
+            with open(opt.loss_file, 'a') as f:
+                f.write('Epoch [%d] Model Loss: %f\n' % (i, loss))
 
         if i % opt.save_every == 0:
             torch.save(discriminator.state_dict(), opt.dis_path)
