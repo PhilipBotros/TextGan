@@ -88,10 +88,11 @@ def pretrain_dis(opt, data_path):
 
     for i in range(opt.num_epochs):
         samples = generate_samples(generator, opt.batch_size, opt.num_gen, opt.seq_len)
+        samples_pr = generator.sample(opt.batch_size, opt.seq_len)
 
-        # Print and save some samples
-        print_samples(10, idx_to_word, samples)
-        save_samples(10, idx_to_word, samples, opt.sample_file, i)
+        # # Print and save some samples
+        print_samples(10, idx_to_word, samples_pr)
+        save_samples(10, idx_to_word, samples_pr, opt.sample_file, i)
 
         dis_data_iter = DisDataIter(real_data, samples, opt.batch_size, opt.lstm_rewards)
         for _ in range(1):
