@@ -77,7 +77,7 @@ class DisDataIter(object):
 
         if full:
             # Target for every word in the sequence
-            self.labels = [[1 for _ in range(len(real_data_lis[0]))] for _ in range(len(real_data_lis))] +\
+            self.labels = [[1 for _ in range(len(real_data_lis[0]) - 1)] for _ in range(len(real_data_lis))] +\
                 [[0 for _ in range(len(fake_data_lis[0]))] for _ in range(len(fake_data_lis))]
         else:
             # Only a target for every sequence
