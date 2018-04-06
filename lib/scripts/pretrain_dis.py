@@ -21,6 +21,7 @@ if __name__ == '__main__':
     from helpers import print_flags
 
 # Custom libraries
+from generator_att import Generator as GeneratorAttention
 from generator import Generator
 from discriminator import Discriminator
 from rollout import Rollout
@@ -62,8 +63,15 @@ def pretrain_dis(opt, data_path):
     if opt.mode == 'char':
         opt.emb_dim = opt.vocab_size
 
-    generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
-                          opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
+    # Define Generator
+    if opt.attention:
+        print("Using attention")
+        generator = GeneratorAttention(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                                       opt.batch_size, opt.seq_len, opt.cuda, opt.mode, att_type=opt.att_type)
+
+    else:
+        generator = Generator(opt.vocab_size, opt.gen_hid_dim, opt.emb_dim, opt.num_layers,
+                              opt.batch_size, opt.seq_len, opt.cuda, opt.mode)
 
     discriminator = Discriminator(opt.num_class, opt.vocab_size, opt.dis_hid_dim,
                                   opt.emb_dim, opt.num_layers, opt.cuda, opt.mode)

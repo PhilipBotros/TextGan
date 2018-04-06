@@ -154,7 +154,7 @@ def train(opt, data_path):
                                dis_loss, dis_optimizer, opt.batch_size, opt.cuda, opt.lstm_rewards)
             print('Batch [%d] Loss: %f' % (num_epochs, loss))
             with open(opt.loss_file, 'a') as f:
-                f.write('Epoch [%d] Model Loss: %f\n' % (i, loss))
+                f.write('Epoch [%d] Model Loss: %f\n' % (num_epochs, loss))
 
         if num_epochs % opt.save_every == 0:
             torch.save(discriminator.state_dict(), opt.dis_path)
