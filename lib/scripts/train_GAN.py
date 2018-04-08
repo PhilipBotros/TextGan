@@ -36,8 +36,12 @@ def train(opt, data_path):
     """
     if opt.cuda is not None and opt.cuda >= 0:
         # Enable GPU
-        torch.cuda.set_device(opt.cuda)
-        opt.cuda = True
+        try:
+            torch.cuda.set_device(opt.cuda)
+            opt.cuda = True
+        except:
+            torch.cuda.set_device(0)
+            opt.cuda = True
 
     if opt.positive_file is None:
         if opt.mode == 'word':
@@ -119,14 +123,15 @@ def train(opt, data_path):
     for num_epochs in range(opt.num_epochs):
         # Train the Generator and Discriminator
         for it in range(1):
-            # Generate some samples for printing
+            # Generate some samples
             samples = generator.sample(opt.batch_size, opt.seq_len)
+
             print_samples(10, idx_to_word, samples)
             save_samples(10, idx_to_word, samples, opt.sample_file, num_epochs)
 
             # Construct the input to the generator, add zeros before samples and delete the last column
             zeros = torch.zeros((opt.batch_size, 1)).type(torch.LongTensor)
-            if samples.is_cuda:
+            if opt.cuda:
                 zeros = zeros.cuda()
             inputs = Variable(torch.cat([zeros, samples.data], dim=1)[:, :-1].contiguous())
             targets = Variable(samples.data).contiguous().view((-1,))
