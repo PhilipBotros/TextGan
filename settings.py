@@ -16,7 +16,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Training Parameters")
 
     # Device settings
-    parser.add_argument('--cuda', default=0, type=int,
+    parser.add_argument('--cuda', default=None, type=int,
                         help="Device number of GPU, None when CPU is used.")
     parser.add_argument('--remote', default=0, type=int, help="True when we run on a server.")
 
