@@ -1,4 +1,5 @@
 # TextGan
+A natural language generator trained by the adverserial framework.
 ### Get started
 
 Download the labels dataset:
@@ -14,4 +15,8 @@ Run the main model with either rewards coming from the LSTM directly or through 
 ```sh
 $ python main.py --lstm_rewards
 ```
-Rest of the (hyper) parameters can be found in settings.py and can be given as command line arguments.
+Add attention to the sequence model by:
+```sh
+$ python main.py --attention
+```
+We first pre train the generator/discriminator to obtain a vanilla language model after which we start the adverserial training. The rest of the (hyper) parameters can be found in settings.py and can be given as command line arguments.

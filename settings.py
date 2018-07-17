@@ -16,7 +16,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Training Parameters")
 
     # Device settings
-    parser.add_argument('--cuda', default=None, type=int,
+    parser.add_argument('--cuda', default=0, type=int,
                         help="Device number of GPU, None when CPU is used.")
     parser.add_argument('--remote', default=0, type=int, help="True when we run on a server.")
 
@@ -65,7 +65,7 @@ def parse_arguments():
     parser.add_argument('--lr', default=1e-3, type=float, help="Learning rate of the optimizer")
 
     # Main script settings
-    parser.add_argument('--pre_gen', default=0, type=int, help="1: Pretrain the generator.")
+    parser.add_argument('--pre_gen', default=1, type=int, help="1: Pretrain the generator.")
     parser.add_argument('--pre_dis', default=1, type=int, help="1: Pretrain the discriminator.")
     parser.add_argument('--train_gan', default=1, type=int, help="1: Adverserial training.")
 
