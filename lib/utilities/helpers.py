@@ -1,4 +1,5 @@
 import numpy as np
+from math import ceil
 import json
 from torch.autograd import Variable
 import time
@@ -39,7 +40,7 @@ def create_vocab_dict(vocab_file):
 
 def generate_samples(model, batch_size, generated_num, seq_len):
     samples = []
-    for _ in range(int(generated_num / batch_size)):
+    for _ in range(ceil(generated_num / batch_size)):
         sample = model.sample(batch_size, seq_len).cpu().data.numpy().tolist()
         samples.extend(sample)
 
